@@ -995,6 +995,11 @@ private:
 
 	int						lastImpulseTime;		// time of last impulse
 	idEntityPtr<idEntity>	bossEnemy;
+	idEntityPtr<idEntity>	Tower1;
+	idEntityPtr<idEntity>	Tower2;
+	idEntityPtr<idEntity>	Tower3;
+	idEntityPtr<idEntity>	Tower4;
+	idEntityPtr<idEntity>	Tower5;
 
 	const idDeclEntityDef*	cachedWeaponDefs[ MAX_WEAPONS ];
 	const idDeclEntityDef*	cachedPowerupDefs[ POWERUP_MAX ];

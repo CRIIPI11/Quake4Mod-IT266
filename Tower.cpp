@@ -15,7 +15,7 @@ rvTower::rvTower() {
 
 void rvTower::Spawn(void) {
 
-	health = 100;
+	health = spawnArgs.GetInt("health", "1000");
 	fl.takedamage = true;
 	fl.solidForTeam = true;
 	BecomeSolid();
@@ -27,6 +27,7 @@ void rvTower::InitSpawnArgsVariables(void)
 {
 	healthRegen = spawnArgs.GetInt("healthRegen", "2");
 	healthRegenEnabled = spawnArgs.GetBool("healthRegenEnabled", "0");
+	maxHealth = spawnArgs.GetInt("maxhealth", "1000");
 }
 
 

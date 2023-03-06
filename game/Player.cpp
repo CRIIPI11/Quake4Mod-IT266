@@ -3417,6 +3417,8 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	}
 	
 	// Boss bar
+	idEntity* tw = gameLocal.FindEntity("tower_1");
+	Tower1 = tw;
 	if ( _hud->State().GetInt ( "boss_health", "-1" ) != (bossEnemy ? bossEnemy->health : -1) ) {
 		if ( !bossEnemy || bossEnemy->health <= 0 ) {
 			bossEnemy = NULL;
@@ -3424,10 +3426,76 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 			_hud->HandleNamedEvent ( "hideBossBar" );			
  			_hud->HandleNamedEvent ( "hideBossShieldBar" ); // grrr, for boss buddy..but maybe other bosses will have shields?
 		} else {			
-			_hud->SetStateInt ( "boss_health", bossEnemy->health );
+			_hud->SetStateInt ( "boss_health", bossEnemy->health);
 			_hud->HandleNamedEvent ( "updateBossBar" );
 		}
 	}
+
+	//Tower =========== criipi
+	
+	if (_hud->State().GetInt("tower_health", "-1") != (Tower1 ? Tower1->health : -1)) {
+		if (!Tower1 || Tower1->health <= 0) {
+			_hud->SetStateInt("Tower_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower_maxhealth", Tower1->health);
+			_hud->SetStateInt("tower_health", Tower1->health);
+			_hud->HandleNamedEvent("updateTower");
+		}
+	}
+	/*
+	//----------
+	Tower2 = gameLocal.FindEntity("tower_2");
+	if (_hud->State().GetInt("tower_health", "-1") != (Tower2 ? Tower2->health : -1)) {
+		if (!Tower2 || Tower2->health <= 0) {
+			Tower2 = NULL;
+			_hud->SetStateInt("Tower1_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower_maxhealth", Tower2->health);
+			_hud->SetStateInt("tower_health", Tower2->health);
+			_hud->HandleNamedEvent("updateTowerBar");
+		}
+	}
+	//----------
+	Tower3 = gameLocal.FindEntity("tower_1");
+	if (_hud->State().GetInt("tower_health", "-1") != (Tower3 ? Tower3->health : -1)) {
+		if (!Tower3 || Tower3->health <= 0) {
+			Tower3 = NULL;
+			_hud->SetStateInt("Tower1_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower_maxhealth", Tower3->health);
+			_hud->SetStateInt("tower_health", Tower3->health);
+			_hud->HandleNamedEvent("updateTowerBar");
+		}
+	}
+	//---------
+	Tower4 = gameLocal.FindEntity("tower_1");
+	if (_hud->State().GetInt("tower_health", "-1") != (Tower4 ? Tower4->health : -1)) {
+		if (!Tower4 || Tower4->health <= 0) {
+			Tower4 = NULL;
+			_hud->SetStateInt("Tower1_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower_maxhealth", Tower4->health);
+			_hud->SetStateInt("tower_health", Tower4->health);
+			_hud->HandleNamedEvent("updateTowerBar");
+		}
+	}
+	//-----
+	Tower5 = gameLocal.FindEntity("tower_1");
+	if (_hud->State().GetInt("tower_health", "-1") != (Tower5 ? Tower5->health : -1)) {
+		if (!Tower5 || Tower5->health <= 0) {
+			Tower5 = NULL;
+			_hud->SetStateInt("Tower1_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower_maxhealth", Tower5->health);
+			_hud->SetStateInt("tower_health", Tower5->health);
+			_hud->HandleNamedEvent("updateTowerBar");
+		}
+	}*/
 		
 	// god mode information
 	_hud->SetStateString( "player_god", va( "%i", (godmode && g_showGodDamage.GetBool()) ) );
