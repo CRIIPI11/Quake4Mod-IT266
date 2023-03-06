@@ -3435,7 +3435,7 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	
 	if (_hud->State().GetInt("tower_health", "-1") != (Tower1 ? Tower1->health : -1)) {
 		if (!Tower1 || Tower1->health <= 0) {
-			_hud->SetStateInt("Tower_health", -1);
+			_hud->SetStateInt("tower_health", -1);
 		}
 		else {
 			_hud->SetStateInt("tower_maxhealth", Tower1->health);

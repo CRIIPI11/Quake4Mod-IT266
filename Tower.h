@@ -16,6 +16,8 @@ public:
 	void				Think(void);
 	void				Save(idSaveGame* savefile) const;
 	void				Restore(idRestoreGame* savefile);
+	virtual	void		Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir, const char* damageDefName, const float damageScale, const int location);
+
 
 
 private:
@@ -27,6 +29,11 @@ private:
 
 	int					nextWallTraceTime;
 	rvAIAction            action;
+	float					dynamicProtectionScale;	// value to scale damage by due to dynamic protection
+	int						lastDamageDef;
+	idVec3					lastDamageDir;
+	int						lastDamageLocation;
+	int						lastDmgTime;
 
 };
 

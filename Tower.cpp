@@ -34,58 +34,7 @@ void rvTower::InitSpawnArgsVariables(void)
 void rvTower::Think(void) {
 	idAI::Think();
 
-	if (health > 0) {
-		//alive
-		if (healthRegenEnabled && healthRegen) {
-			if (gameLocal.GetTime() >= healthRegenNextTime) {
-				health = idMath::ClampInt(0, maxHealth, health + healthRegen);
-				healthRegenNextTime = gameLocal.GetTime() + 1000;
-			}
-		}
-	}
-
-	//crappy place to do this, just testing
-	bool clearPrefix = true;
-	bool facingWall = false;
-	if (move.fl.moving && InCoverMode() && combat.fl.aware) {
-		clearPrefix = false;
-		if (DistanceTo(aasSensor->ReservedOrigin()) < move.walkRange * 2.0f) {
-			facingWall = true;
-		}
-		else if (nextWallTraceTime < gameLocal.GetTime()) {
-			//do an occasional check for solid architecture directly in front of us
-			nextWallTraceTime = gameLocal.GetTime() + gameLocal.random.RandomInt(750) + 750;
-			trace_t	wallTrace;
-			idVec3 start, end;
-			idMat3 axis;
-			if (neckJoint != INVALID_JOINT) {
-				GetJointWorldTransform(neckJoint, gameLocal.GetTime(), start, axis);
-				end = start + axis[0] * 32.0f;
-			}
-			else {
-				start = GetEyePosition();
-				start += viewAxis[0] * 8.0f;//still inside bbox
-				end = start + viewAxis[0] * 32.0f;
-			}
-			//trace against solid arcitecture only, don't care about other entities
-			gameLocal.TracePoint(this, wallTrace, start, end, MASK_SOLID, this);
-			if (wallTrace.fraction < 1.0f) {
-				facingWall = true;
-			}
-			else {
-				clearPrefix = true;
-			}
-		}
-	}
-
-	if (facingWall) {
-		if (!animPrefix.Length()) {
-			animPrefix = "nearcover";
-		}
-	}
-	else if (clearPrefix && animPrefix == "nearcover") {
-		animPrefix = "";
-	}
+	
 }
 
 
@@ -98,6 +47,92 @@ void rvTower::Save(idSaveGame* savefile) const {
 void rvTower::Restore(idRestoreGame* savefile) {
 	savefile->ReadInt( health );
 
+}
+
+void rvTower::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir, const char* damageDefName, const float damageScale, const int location)
+{
+	idVec3		kick;
+	int			damage;
+	int			armorSave;
+	int			knockback;
+	idVec3		damage_from;
+	float		attackerPushScale;
+
+
+	if (!fl.takedamage ) {
+		return;
+	}
+
+	
+	if (attacker->IsType(idActor::GetClassType()) && static_cast<idActor*>(attacker)->team == team) {
+		return;
+	}
+	
+	//EFFECTS; Could be added later (?) criipi
+	/*
+	if (damageDef->dict.GetBool("burn")) {
+		StartSound("snd_burn", SND_CHANNEL_BODY3, 0, false, NULL);
+	}
+	else if (damageDef->dict.GetBool("no_air")) {
+		if (!armorSave && health > 0) {
+			StartSound("snd_airGasp", SND_CHANNEL_ITEM, 0, false, NULL);
+		}
+	}
+	*/
+
+	if (g_debugDamage.GetInteger()) {
+		gameLocal.Printf("client:%i health:%i damage:%i armor:%i\n",
+			entityNumber, health, damage, armorSave);
+	}
+
+	// inform the attacker that they hit someone
+	attacker->DamageFeedback(this, inflictor, damage);
+
+	damage = inflictor->spawnArgs.GetInt("damage", "8");
+
+	// do the damage
+	if (damage > 0) {
+		
+		if (damage < 1) {
+			damage = 1;
+		}
+
+		int oldHealth = health;
+		health -= damage;
+
+		GAMELOG_ADD(va("Tower%d_damage_taken", entityNumber), damage);
+		GAMELOG_ADD(va("Tower%d_damage_%s", entityNumber, damageDefName), damage);
+
+		
+		if (health <= 0) {
+
+			if (health < -999) {
+				health = -999;
+			}
+
+			lastDmgTime = gameLocal.time;
+
+			//Killed(inflictor, attacker, damage, dir, location);
+
+		}
+		else {
+			// force a blink
+			blink_time = 0;
+
+			// let the anim script know we took damage
+			Pain(inflictor, attacker, damage, dir, location);
+			if (!g_testDeath.GetBool()) {
+				lastDmgTime = gameLocal.time;
+			}
+		}
+	}
+	
+
+	lastDamageDir = dir;
+	lastDamageDir.Normalize();
+	lastDamageLocation = location;
+	gameLocal.Printf("damage:%i \n",damage);
+	gameLocal.Printf("Damage taken;  Current Life %i\n", health);
 }
 
 
