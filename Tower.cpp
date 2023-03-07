@@ -15,7 +15,7 @@ rvTower::rvTower() {
 
 void rvTower::Spawn(void) {
 
-	health = spawnArgs.GetInt("health", "1000");
+	health = spawnArgs.GetInt("health", "100");
 	fl.takedamage = true;
 	fl.solidForTeam = true;
 	BecomeSolid();
@@ -53,8 +53,6 @@ void rvTower::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir,
 {
 	idVec3		kick;
 	int			damage;
-	int			armorSave;
-	int			knockback;
 	idVec3		damage_from;
 	float		attackerPushScale;
 
@@ -80,15 +78,13 @@ void rvTower::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir,
 	}
 	*/
 
-	if (g_debugDamage.GetInteger()) {
-		gameLocal.Printf("client:%i health:%i damage:%i armor:%i\n",
-			entityNumber, health, damage, armorSave);
+	const idDict* damageDef = gameLocal.FindEntityDefDict(damageDefName, false);
+	if (!damageDef) {
+		gameLocal.Error("Unknown damageDef '%s'", damageDefName);
 	}
 
-	// inform the attacker that they hit someone
-	attacker->DamageFeedback(this, inflictor, damage);
-
-	damage = inflictor->spawnArgs.GetInt("damage", "8");
+	damage = damageDef->GetInt("damage");
+	damage = GetDamageForLocation(damage, location);
 
 	// do the damage
 	if (damage > 0) {
@@ -112,7 +108,7 @@ void rvTower::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir,
 
 			lastDmgTime = gameLocal.time;
 
-			//Killed(inflictor, attacker, damage, dir, location);
+			Killed(inflictor, attacker, damage, dir, location);
 
 		}
 		else {
