@@ -802,6 +802,9 @@ protected:
 private:
 	float					vehicleCameraDist;
 
+	//--------criipi
+	int		oldtime;
+
 	jointHandle_t			hipJoint;
 	jointHandle_t			chestJoint;
 

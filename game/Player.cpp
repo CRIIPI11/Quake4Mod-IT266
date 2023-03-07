@@ -2063,6 +2063,10 @@ void idPlayer::Spawn( void ) {
 //RITUAL END
 
 	itemCosts = static_cast< const idDeclEntityDef * >( declManager->FindType( DECL_ENTITYDEF, "ItemCostConstants", false ) );
+
+	oldtime = gameLocal.time;
+	gameLocal.Printf("start time: %i\n\n\n", oldtime);
+
 }
 
 /*
@@ -3511,6 +3515,13 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	if ( weapon ) {
 		UpdateHudAmmo( _hud );
 	}
+
+	//-----------------criipi
+	if (gameLocal.time > oldtime+200000)
+	{
+		hud->HandleNamedEvent("Descdown");
+	}
+
 	
 	_hud->StateChanged( gameLocal.time );
 }
@@ -3623,6 +3634,8 @@ void idPlayer::UpdateHudWeapon( int displayWeapon ) {
 	hud->HandleNamedEvent( "weaponChange" );
 	hud->StateChanged( gameLocal.time ); 			
 	weaponChangeIconsUp = true;
+
+	
 
 	// if previousWeapon is -1, the weaponChange state won't update it, so manually reset it
 #ifdef _XENON
