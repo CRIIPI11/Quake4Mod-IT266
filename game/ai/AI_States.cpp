@@ -1608,7 +1608,7 @@ bool idAI::UpdateTactical ( int delay ) {
 	assert ( !aifl.action );
 	
 	// No movement updating on simple think (if the update is forced do it anyway)
-	if ( combat.tacticalUpdateTime && aifl.simpleThink && !combat.tacticalMaskUpdate ) {
+	if ( combat.tacticalUpdateTime  && !combat.tacticalMaskUpdate ) {
 		return false;
 	}
 	// Don't let tactical updates pre-empt pain actions

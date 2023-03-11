@@ -3,7 +3,7 @@
 #pragma hdrstop
 
 #include "../Game_local.h"
-
+#include "AI_Manager.h"
 
 //NOTE: actually a bit of a misnomer, as all Strogg Marine types use this class now...
 class rvMonsterStroggMarine : public idAI {
@@ -21,6 +21,8 @@ public:
 protected:
 
 	virtual void		OnStopMoving					( aiMoveCommand_t oldMoveCommand );
+	virtual void			Think(void);
+
 
 	virtual bool		CheckActions					( void );
 
@@ -32,6 +34,8 @@ protected:
 	int					fireAnimNum;
 	bool				spraySideRight;
 	int					sweepCount;
+
+	int					thinkcount;
 
 	bool				EnemyMovingToRight				( void );
 
@@ -108,6 +112,7 @@ void rvMonsterStroggMarine::Spawn ( void ) {
 
 	shots	 = 0;
 	shotsFired = 0;
+	thinkcount = 0;
 }
 
 /*
@@ -184,6 +189,121 @@ void rvMonsterStroggMarine::OnStopMoving ( aiMoveCommand_t oldMoveCommand ) {
 			actionSprayAttack.timer.Clear( actionTime );
 		}
 	}
+}
+
+
+
+
+void rvMonsterStroggMarine::Think(void) {
+	
+
+	// if we are completely closed off from the player, don't do anything at all
+	if (CheckDormant()) {
+		return;
+	}
+
+	// Simple think this frame?
+	aiManager.thinkCount++;
+
+
+	// AI Speeds
+	if (ai_speeds.GetBool()) {
+		aiManager.timerThink.Start();
+	}
+
+	if (thinkFlags & TH_THINK) {
+		// clear out the enemy when he dies or is hidden
+		idEntity* enemyEnt = enemy.ent;
+		idActor* enemyAct = dynamic_cast<idActor*>(enemyEnt);
+
+		// Clear our enemy if necessary
+		if (enemyEnt) {
+			
+			bool enemyDead = (enemyEnt->fl.takedamage && enemyEnt->health <= 0);
+			if (enemyDead || enemyEnt->fl.notarget || enemyEnt->IsHidden() || (enemyAct && enemyAct->team == team)) {
+				ClearEnemy(enemyDead);
+			}	
+		}
+
+		// Action time is stopped when the torso is not idle
+		if (!aifl.action) {
+			actionTime += gameLocal.msec;
+		}
+
+		ValidateCover();
+
+		move.current_yaw += deltaViewAngles.yaw;
+		move.ideal_yaw = idMath::AngleNormalize180(move.ideal_yaw + deltaViewAngles.yaw);
+		deltaViewAngles.Zero();
+
+		if (move.moveType != MOVETYPE_PLAYBACK) {
+			viewAxis = idAngles(0, move.current_yaw, 0).ToMat3();
+		}
+
+		if (!move.fl.allowHiddenMove && IsHidden()) {
+			// hidden monsters
+			UpdateStates();
+		}
+		else if (!ai_freeze.GetBool()) {
+			Prethink();
+
+			// clear the ik before we do anything else so the skeleton doesn't get updated twice
+			walkIK.ClearJointMods();
+
+			// update enemy position if not dead
+			if (!aifl.dead) {
+				UpdateEnemy();
+			}
+
+			// update state machine
+			UpdateStates();
+
+			// run all movement commands
+			Move();
+
+			// if not dead, chatter and blink
+			if (move.moveType != MOVETYPE_DEAD) {
+				UpdateChatter();
+				CheckBlink();
+			}
+
+			Postthink();
+		}
+		else {
+			DrawTactical();
+		}
+
+		// clear pain flag so that we recieve any damage between now and the next time we run the script
+		aifl.pain = false;
+		aifl.damage = false;
+		aifl.pushed = false;
+		pusher = NULL;
+	}
+	else if (thinkFlags & TH_PHYSICS) {
+		RunPhysics();
+	}
+
+	if (move.fl.allowPushMovables) {
+		PushWithAF();
+	}
+
+	if (fl.hidden && move.fl.allowHiddenMove) {
+		// UpdateAnimation won't call frame commands when hidden, so call them here when we allow hidden movement
+		animator.ServiceAnims(gameLocal.previousTime, gameLocal.time);
+	}
+
+	aasSensor->Update();
+
+	UpdateAnimation();
+	Present();
+	LinkCombat();
+
+	// AI Speeds
+	if (ai_speeds.GetBool()) {
+		aiManager.timerThink.Stop();
+	}
+	
+
 }
 
 /*
@@ -753,3 +873,5 @@ stateResult_t rvMonsterStroggMarine::State_Torso_SprayAttack ( const stateParms_
 	}
 	return SRESULT_ERROR; 
 }
+
+

@@ -1138,14 +1138,15 @@ idAI::Think
 void idAI::Think( void ) {
 
 	// if we are completely closed off from the player, don't do anything at all
-	/*if (CheckDormant()) {
+	if (CheckDormant()) {
 		return;
-	}*/
+	}
 
 	// Simple think this frame?
 	
 
 	aiManager.thinkCount++;
+	
 
 	// AI Speeds
 	if ( ai_speeds.GetBool ( ) ) {
@@ -3614,6 +3615,8 @@ void idAI::Prethink ( void ) {
 	} else if ( tether && aifl.tetherMover ) {
 		SetTether ( NULL );
 	}
+	
+
 }
 
 /*
