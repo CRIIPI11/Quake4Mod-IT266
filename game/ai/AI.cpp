@@ -652,7 +652,7 @@ void idAI::Spawn( void ) {
  	combat.visStandHeight			= spawnArgs.GetFloat( "visStandHeight", "68" );
  	combat.visCrouchHeight			= spawnArgs.GetFloat( "visCrouchHeight", "48" );
  	combat.earRange					= spawnArgs.GetFloat( "earRange", "2048" );
- 	combat.awareRange				= spawnArgs.GetFloat( "awareRange", "350" );
+ 	combat.awareRange				= spawnArgs.GetFloat( "awareRange", "650" );
  	combat.aggressiveRange			= spawnArgs.GetFloat( "aggressiveRange", "0" );
  	combat.maxLostVisTime			= SEC2MS ( spawnArgs.GetFloat ( "maxLostVisTime", "5" ) );
  	combat.tacticalPainThreshold    = spawnArgs.GetInt ( "tactical_painThreshold", va("%d", health / 4) );
@@ -1144,6 +1144,7 @@ void idAI::Think( void ) {
 
 	// Simple think this frame?
 	
+	aifl.simpleThink = aiManager.IsSimpleThink(this);
 
 	aiManager.thinkCount++;
 	
@@ -1371,7 +1372,7 @@ void idAI::UpdateStates ( void ) {
 
 	// Continue updating tactical state if for some reason we dont have one 
 	if ( !aifl.dead && !aifl.scripted && !aifl.action && stateThread.IsIdle ( ) && aifl.scriptedEndWithIdle ) {
-		UpdateTactical ( 0 );
+		UpdateTactical ( 1 );
 	} else {
 		UpdateState();
 	}

@@ -195,7 +195,6 @@ void rvMonsterStroggMarine::OnStopMoving ( aiMoveCommand_t oldMoveCommand ) {
 
 
 void rvMonsterStroggMarine::Think(void) {
-	
 
 	// if we are completely closed off from the player, don't do anything at all
 	if (CheckDormant()) {
@@ -203,6 +202,7 @@ void rvMonsterStroggMarine::Think(void) {
 	}
 
 	// Simple think this frame?
+
 	aiManager.thinkCount++;
 
 
@@ -258,9 +258,17 @@ void rvMonsterStroggMarine::Think(void) {
 			// update state machine
 			UpdateStates();
 
+
+			if (gameLocal.time < 300000)
+			{
+				FaceEnemy();
+			}
+
+
 			// run all movement commands
 			Move();
-
+						
+			
 			// if not dead, chatter and blink
 			if (move.moveType != MOVETYPE_DEAD) {
 				UpdateChatter();

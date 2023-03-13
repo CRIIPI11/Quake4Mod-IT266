@@ -2098,9 +2098,6 @@ void TestTeammateCollisions(idAI* owner) {
 
 
 
-
-
-
 /*
 =====================
 idAI::CheckObstacleAvoidance
