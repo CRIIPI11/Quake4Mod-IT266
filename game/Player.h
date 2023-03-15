@@ -795,7 +795,7 @@ public:
 	void					SetCash( float newCashAmount );
 	void					ResetCash();
 // RITUAL END
-
+	int   points;
 protected:
 	void					SetupHead( const char* modelKeyName = "", idVec3 headOffset = idVec3(0, 0, 0) );
 
@@ -804,6 +804,7 @@ private:
 
 	//--------criipi
 	int		oldtime;
+	
 
 	jointHandle_t			hipJoint;
 	jointHandle_t			chestJoint;

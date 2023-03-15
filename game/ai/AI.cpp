@@ -1615,6 +1615,7 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	idAngles			ang;
 	const char*			modelDeath;
 	const idKeyValue*	kv;
+	idPlayer* player;
 	
 	if ( g_debugDamage.GetBool() ) {
 		gameLocal.Printf( "Damage: joint: '%s', zone '%s'\n", animator.GetJointName( ( jointHandle_t )location ), 
@@ -1755,6 +1756,16 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		}
 		kv = spawnArgs.MatchPrefix( "def_drops", kv );
 	}
+
+	//================Player's Points=============== criipi
+	if (attacker->IsType(idPlayer::GetClassType()))
+	{
+		gameLocal.Printf("YO\n");
+		player = static_cast<idPlayer*>(attacker);
+		player->points += 10;
+
+	}
+	
 }
 
 /***********************************************************************
