@@ -17,15 +17,15 @@ public:
 	void				Save(idSaveGame* savefile) const;
 	void				Restore(idRestoreGame* savefile);
 	virtual	void		Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir, const char* damageDefName, const float damageScale, const int location);
-
-
-
-private:
-
-	int					healthRegen;
-	bool				healthRegenEnabled;
-	int					healthRegenNextTime;
 	int					maxHealth;
+	int					regenTime;
+	bool				healthRegenEnabled;
+	bool				poisonIvy;
+	int					poisonscale;
+private:
+	int					healthRegen;
+	int					healthRegenNextTime;
+	
 
 	int					nextWallTraceTime;
 	rvAIAction            action;
@@ -34,6 +34,7 @@ private:
 	idVec3					lastDamageDir;
 	int						lastDamageLocation;
 	int						lastDmgTime;
+
 
 };
 

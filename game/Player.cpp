@@ -2066,6 +2066,7 @@ void idPlayer::Spawn( void ) {
 
 	oldtime = gameLocal.time;
 	gameLocal.Printf("start time: %i\n\n\n", oldtime);
+	points = 0;
 
 }
 
@@ -3522,7 +3523,8 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 		hud->HandleNamedEvent("Descdown");
 	}
 
-	
+	_hud->SetStateInt("points", points);
+
 	_hud->StateChanged( gameLocal.time );
 }
 

@@ -21,22 +21,33 @@ void rvTower::Spawn(void) {
 	BecomeSolid();
 	physicsObj.GetClipModel()->Link();
 
+	healthRegenNextTime = 0;
+	maxHealth = health;
+	regenTime = 3000;
+	healthRegen = 15;
+	healthRegenEnabled = false;
+	poisonIvy = false;
+	poisonscale = 1;
 }
 
 void rvTower::InitSpawnArgsVariables(void)
-{
-	healthRegen = spawnArgs.GetInt("healthRegen", "2");
-	healthRegenEnabled = spawnArgs.GetBool("healthRegenEnabled", "0");
-	maxHealth = spawnArgs.GetInt("maxhealth", "1000");
+{	
 }
 
 
 void rvTower::Think(void) {
+	
 	idAI::Think();
 
+	//==================Tower Ability============================
+	if (health > 0 && health < maxHealth && healthRegenEnabled) {
+		if (gameLocal.GetTime() >= healthRegenNextTime) {
+			health += healthRegen;
+			healthRegenNextTime = gameLocal.GetTime() + regenTime;
+		}
+	}
 	
 }
-
 
 
 void rvTower::Save(idSaveGame* savefile) const {
@@ -84,7 +95,6 @@ void rvTower::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir,
 	}
 
 	damage = damageDef->GetInt("damage");
-	damage = GetDamageForLocation(damage, location);
 
 	// do the damage
 	if (damage > 0) {
@@ -93,7 +103,6 @@ void rvTower::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir,
 			damage = 1;
 		}
 
-		int oldHealth = health;
 		health -= damage;
 
 		GAMELOG_ADD(va("Tower%d_damage_taken", entityNumber), damage);
@@ -123,14 +132,21 @@ void rvTower::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir,
 		}
 	}
 	
+	//==================Tower Ability============================
+	if(poisonIvy)
+	{ 
+		attacker->Damage(inflictor, attacker, dir, damageDefName, poisonscale, location);
+	}
 
 	lastDamageDir = dir;
 	lastDamageDir.Normalize();
 	lastDamageLocation = location;
-	gameLocal.Printf("damage:%i \n",damage);
-	gameLocal.Printf("Damage taken;  Current Life %i\n", health);
-}
+//	gameLocal.Printf("damage:%i \n",damage);
+//	gameLocal.Printf("Damage taken;  Current Life %i\n", health);
 
+
+
+}
 
 
 
