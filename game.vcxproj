@@ -373,6 +373,7 @@
     <ClCompile Include="game\weapon\WeaponRocketLauncher.cpp" />
     <ClCompile Include="game\weapon\WeaponShotgun.cpp" />
     <ClCompile Include="game\WorldSpawn.cpp" />
+    <ClCompile Include="playerabilities.cpp" />
     <ClCompile Include="playerstuff.cpp" />
     <ClCompile Include="TowerUpgrade.cpp" />
     <ClCompile Include="Tower.cpp" />

@@ -1762,7 +1762,7 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	{
 		gameLocal.Printf("YO\n");
 		player = static_cast<idPlayer*>(attacker);
-		player->points += 10;
+		player->points += 25;
 
 	}
 	

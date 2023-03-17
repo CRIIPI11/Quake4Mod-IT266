@@ -528,6 +528,9 @@
     <ClCompile Include="playerstuff.cpp">
       <Filter>Game\shopItems</Filter>
     </ClCompile>
+    <ClCompile Include="playerabilities.cpp">
+      <Filter>Game\shopItems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\Actor.h">

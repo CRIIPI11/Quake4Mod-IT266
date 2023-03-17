@@ -1426,6 +1426,7 @@ void idClass::RegisterClasses( void )
 	REGISTER(rvTower);
 	REGISTER(TowerUpgrade);
 	REGISTER(playerstuff);
+	REGISTER(playerabilities);
 // RITUAL BEGIN
 	REGISTER(riDeadZonePowerup); // ..\..\code\game\Item.cpp
 	REGISTER(WeaponNapalmGun);	// ..\..\code\game\weapon\WeaponNapalmGun.cpp

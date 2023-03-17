@@ -1818,6 +1818,7 @@ void idPlayer::Spawn( void ) {
 	idStr		temp;
 	idBounds	bounds;
 
+	lvl = 1;
 	if ( entityNumber >= MAX_CLIENTS ) {
 		gameLocal.Error( "entityNum > MAX_CLIENTS for player.  Player may only be spawned with a client." );
 	}
@@ -5163,7 +5164,6 @@ idPlayer::GiveWeaponMods
 bool idPlayer::GiveWeaponMods( int mods ) {
 	inventory.weaponMods[currentWeapon] |= mods;
 	currentWeapon = -1;
-	
 	return true;
 }
 

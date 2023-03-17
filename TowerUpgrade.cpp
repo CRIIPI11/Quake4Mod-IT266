@@ -42,7 +42,7 @@ void TowerUpgrade::Spawn(void) {
 	fl.solidForTeam = true;
 	BecomeSolid();
 	fl.notarget = true;
-	price = 500;
+	price = spawnArgs.GetInt("price", "500");
 }
 
 void TowerUpgrade::Think(void) {
@@ -109,7 +109,7 @@ void TowerUpgrade::upgrade(idEntity* attacker, int lvl)
 		gameLocal.Printf("Major Level Reached!");
 		break;
 	}
-
+	return;
 }
 
  

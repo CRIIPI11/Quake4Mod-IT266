@@ -76,7 +76,7 @@ void playerstuff::give(idEntity* attacker)
 			player->health = player->inventory.maxHealth;
 			player->points -= price;
 		}
-		
+		return;
 	}
 
 	if (idStr::Icmp(spawnArgs.GetString("item", ""), "armor") == 0)
@@ -86,6 +86,7 @@ void playerstuff::give(idEntity* attacker)
 			player->inventory.armor = player->inventory.maxarmor;
 			player->points -= price;
 		}
+		return;
 	}
 	
 	if (idStr::Cmpn(spawnArgs.GetString("item", ""), "weapon_", 7) == 0 ) {
@@ -104,6 +105,7 @@ void playerstuff::give(idEntity* attacker)
 				}
 				gameLocal.Printf("clip size  %i\n", clip);
 			}
+			return;
 		}
 		else
 		{ 
@@ -115,8 +117,18 @@ void playerstuff::give(idEntity* attacker)
 				bought = TRUE;
 				price /= 2;
 			}
+			return;
 		}
+
 	}
+
+	//might fail (?)
+	if (idStr::Icmp(spawnArgs.GetString("item", ""), "wpMod") == 0)
+	{
+		player->GiveWeaponMods(1);
+
+	}
+
 
 	gameLocal.Printf("player points: %i\n", player->points);
 
@@ -130,6 +142,7 @@ void playerstuff::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& 
 	if (attacker->IsType(idPlayer::GetClassType()))
 	{
 		give(attacker);
+
 	}
 
 

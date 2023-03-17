@@ -795,9 +795,10 @@ public:
 	void					SetCash( float newCashAmount );
 	void					ResetCash();
 // RITUAL END
-//============	
+//============criipi======	
 	int   points;
 	int damagescale;
+	int	lvl;
 
 protected:
 	void					SetupHead( const char* modelKeyName = "", idVec3 headOffset = idVec3(0, 0, 0) );
@@ -950,6 +951,7 @@ private:
 	idVec3					predictionOriginError;
 	idAngles				predictionAnglesError;
 	int						predictionErrorTime;
+	
 
 	// mp
  	bool					ready;					// from userInfo
