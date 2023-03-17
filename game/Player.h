@@ -795,7 +795,10 @@ public:
 	void					SetCash( float newCashAmount );
 	void					ResetCash();
 // RITUAL END
+//============	
 	int   points;
+	int damagescale;
+
 protected:
 	void					SetupHead( const char* modelKeyName = "", idVec3 headOffset = idVec3(0, 0, 0) );
 
@@ -999,7 +1002,7 @@ private:
 
 	int						lastImpulseTime;		// time of last impulse
 	idEntityPtr<idEntity>	bossEnemy;
-	idEntityPtr<idEntity>	Tower1;
+	idEntity*	Tower1;
 	idEntityPtr<idEntity>	Tower2;
 	idEntityPtr<idEntity>	Tower3;
 	idEntityPtr<idEntity>	Tower4;

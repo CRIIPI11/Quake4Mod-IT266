@@ -9,9 +9,12 @@
 CLASS_DECLARATION(idAI, rvTower)
 END_CLASS
 
-rvTower::rvTower() {
-
-}
+bool rvTower::healthRegenEnabled = FALSE;
+bool rvTower::poisonIvy = FALSE;
+int rvTower::regenTime = 3000;
+int rvTower::poisonscale = 1;
+int rvTower::maxHealth = 1000;
+int rvTower::lvl = 1;
 
 void rvTower::Spawn(void) {
 
@@ -20,14 +23,9 @@ void rvTower::Spawn(void) {
 	fl.solidForTeam = true;
 	BecomeSolid();
 	physicsObj.GetClipModel()->Link();
-
 	healthRegenNextTime = 0;
-	maxHealth = health;
-	regenTime = 3000;
 	healthRegen = 15;
-	healthRegenEnabled = false;
-	poisonIvy = false;
-	poisonscale = 1;
+	
 }
 
 void rvTower::InitSpawnArgsVariables(void)
@@ -38,7 +36,7 @@ void rvTower::InitSpawnArgsVariables(void)
 void rvTower::Think(void) {
 	
 	idAI::Think();
-
+	
 	//==================Tower Ability============================
 	if (health > 0 && health < maxHealth && healthRegenEnabled) {
 		if (gameLocal.GetTime() >= healthRegenNextTime) {
@@ -142,11 +140,17 @@ void rvTower::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir,
 	lastDamageDir.Normalize();
 	lastDamageLocation = location;
 //	gameLocal.Printf("damage:%i \n",damage);
-//	gameLocal.Printf("Damage taken;  Current Life %i\n", health);
+	//healthRegenEnabled ? gameLocal.Printf("true\n") : gameLocal.Printf("flase\n");
+	//gameLocal.Printf("Damage taken;  Current Life %i\n", health);
 
 
 
 }
+
+
+
+
+
 
 
 

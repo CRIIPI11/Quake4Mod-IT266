@@ -37,6 +37,9 @@
     <Filter Include="Game\MP\Stats">
       <UniqueIdentifier>{88b2a73a-5a02-4c39-9ad5-cfb62c945c67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\shopItems">
+      <UniqueIdentifier>{21b69f01-7b77-430d-a1a4-1e136d95e239}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game\Actor.cpp">
@@ -518,6 +521,12 @@
     </ClCompile>
     <ClCompile Include="Tower.cpp">
       <Filter>Game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="TowerUpgrade.cpp">
+      <Filter>Game\shopItems</Filter>
+    </ClCompile>
+    <ClCompile Include="playerstuff.cpp">
+      <Filter>Game\shopItems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
