@@ -17,6 +17,7 @@
 #include "ai/AAS_tactical.h"
 #include "Healing_Station.h"
 #include "ai/AI_Medic.h"
+#include "../Tower.h"
 
 // RAVEN BEGIN
 // nrausch: support for turning the weapon change ui on and off
@@ -1817,6 +1818,7 @@ void idPlayer::Spawn( void ) {
 	idStr		temp;
 	idBounds	bounds;
 
+	lvl = 1;
 	if ( entityNumber >= MAX_CLIENTS ) {
 		gameLocal.Error( "entityNum > MAX_CLIENTS for player.  Player may only be spawned with a client." );
 	}
@@ -2063,10 +2065,12 @@ void idPlayer::Spawn( void ) {
 //RITUAL END
 
 	itemCosts = static_cast< const idDeclEntityDef * >( declManager->FindType( DECL_ENTITYDEF, "ItemCostConstants", false ) );
-
+	
+	//=================criipi
 	oldtime = gameLocal.time;
 	gameLocal.Printf("start time: %i\n\n\n", oldtime);
 	points = 0;
+	damagescale = 1;
 
 }
 
@@ -3402,6 +3406,7 @@ idPlayer::UpdateHudStats
 */
 void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	int temp;
+	rvTower* tower;
 	
 	assert ( _hud );
 
@@ -3438,12 +3443,13 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	//Tower =========== criipi
 
 	Tower1 = gameLocal.FindEntity("tower_1");
+
 	if (_hud->State().GetInt("tower_health", "-1") != (Tower1 ? Tower1->health : -1)) {
 		if (!Tower1 || Tower1->health <= 0) {
 			_hud->SetStateInt("tower_health", -1);
 		}
 		else {
-			_hud->SetStateInt("tower_maxhealth", 1000);
+			_hud->SetStateInt("tower_maxhealth", rvTower::maxHealth);
 			_hud->SetStateInt("tower_health", Tower1->health);
 			_hud->HandleNamedEvent("updateTower");
 		}
@@ -3457,7 +3463,7 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 			_hud->SetStateInt("Tower2_health", -1);
 		}
 		else {
-			_hud->SetStateInt("tower2_maxhealth", 1000);
+			_hud->SetStateInt("tower2_maxhealth", rvTower::maxHealth);
 			_hud->SetStateInt("tower2_health", Tower2->health);
 			_hud->HandleNamedEvent("updateTowerBar");
 		}
@@ -3470,7 +3476,7 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 			_hud->SetStateInt("Tower3_health", -1);
 		}
 		else {
-			_hud->SetStateInt("tower3_maxhealth", 1000);
+			_hud->SetStateInt("tower3_maxhealth", rvTower::maxHealth);
 			_hud->SetStateInt("tower3_health", Tower3->health);
 			_hud->HandleNamedEvent("updateTowerBar");
 		}
@@ -3483,7 +3489,7 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 			_hud->SetStateInt("Tower4_health", -1);
 		}
 		else {
-			_hud->SetStateInt("tower4_maxhealth", 1000);
+			_hud->SetStateInt("tower4_maxhealth", rvTower::maxHealth);
 			_hud->SetStateInt("tower4_health", Tower4->health);
 			_hud->HandleNamedEvent("updateTowerBar");
 		}
@@ -3496,9 +3502,10 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 			_hud->SetStateInt("Tower5_health", -1);
 		}
 		else {
-			_hud->SetStateInt("tower5_maxhealth", 1000);
+			_hud->SetStateInt("tower5_maxhealth", rvTower::maxHealth);
 			_hud->SetStateInt("tower5_health", Tower5->health);
 			_hud->HandleNamedEvent("updateTowerBar");
+			
 		}
 	}
 		
@@ -5157,7 +5164,6 @@ idPlayer::GiveWeaponMods
 bool idPlayer::GiveWeaponMods( int mods ) {
 	inventory.weaponMods[currentWeapon] |= mods;
 	currentWeapon = -1;
-	
 	return true;
 }
 

@@ -5,6 +5,7 @@
 #include "../Game_local.h"
 #include "AI_Manager.h"
 
+
 //NOTE: actually a bit of a misnomer, as all Strogg Marine types use this class now...
 class rvMonsterStroggMarine : public idAI {
 public:
