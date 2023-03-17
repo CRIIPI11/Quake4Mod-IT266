@@ -4,12 +4,13 @@
 #define __TOWER__
 
 
+
 class rvTower : public idAI {
 public:
 
 	CLASS_PROTOTYPE(rvTower);
 
-	rvTower(void);
+
 
 	void				InitSpawnArgsVariables(void);
 	void				Spawn(void);
@@ -17,11 +18,13 @@ public:
 	void				Save(idSaveGame* savefile) const;
 	void				Restore(idRestoreGame* savefile);
 	virtual	void		Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir, const char* damageDefName, const float damageScale, const int location);
-	int					maxHealth;
-	int					regenTime;
-	bool				healthRegenEnabled;
-	bool				poisonIvy;
-	int					poisonscale;
+	static int			maxHealth;
+	static int			regenTime;
+	static bool			healthRegenEnabled;
+	static bool			poisonIvy;
+	static int			poisonscale;
+	static int			lvl;
+	
 private:
 	int					healthRegen;
 	int					healthRegenNextTime;
@@ -38,6 +41,5 @@ private:
 
 };
 
-extern const idEventDef AI_ForcePosture;
 
-#endif /* !__AI_TACTICAL__ */
+#endif 

@@ -88,6 +88,8 @@ public:
 
 private:
 
+	
+
 	idStrList				pendingGUIEvents;
 
 	// effects
@@ -398,6 +400,9 @@ public:
 
 public:
 
+	//========criipi=====
+	int scale;
+	idPlayer* player;
 	idDict							spawnArgs;
 
 protected:

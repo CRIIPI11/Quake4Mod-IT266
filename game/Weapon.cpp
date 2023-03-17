@@ -692,6 +692,9 @@ void rvWeapon::Spawn ( void ) {
 	stateThread.SetOwner( this );
 	
 	forceGUIReload = true;
+
+	player = gameLocal.GetLocalPlayer();
+
 }
 
 /*
@@ -2589,15 +2592,17 @@ void rvWeapon::Attack( bool altAttack, int num_attacks, float spread, float fuse
 	if ( ammoClip == 0 && AmmoAvailable() == 0 ) {
 		viewModel->PostGUIEvent ( "weapon_noammo" );
 	}
-	
+	//========criipi
+	scale = player->damagescale;
+
 	// The attack is either a hitscan or a launched projectile, do that now.
 	if ( !gameLocal.isClient ) {
 		idDict& dict = altAttack ? attackAltDict : attackDict;
 		power *= owner->PowerUpModifier( PMOD_PROJECTILE_DAMAGE );
 		if ( altAttack ? wfl.attackAltHitscan : wfl.attackHitscan ) {
-			Hitscan( dict, muzzleOrigin, muzzleAxis, num_attacks, spread, power );
+			Hitscan( dict, muzzleOrigin, muzzleAxis, num_attacks*scale, spread, power );
 		} else {
-			LaunchProjectiles( dict, muzzleOrigin, muzzleAxis, num_attacks, spread, fuseOffset, power );
+			LaunchProjectiles( dict, muzzleOrigin, muzzleAxis, num_attacks*scale, spread, fuseOffset, power );
 		}
 		//asalmon:  changed to keep stats even in single player 
 		statManager->WeaponFired( owner, weaponIndex, num_attacks );
