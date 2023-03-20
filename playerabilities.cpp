@@ -65,6 +65,8 @@ void playerabilities::upgrade(idEntity* attacker, int lvl)
 		player->inventory.armor = player->inventory.maxarmor;
 		player->lvl = 2;
 		player->points -= price;
+		player->hud->SetStateString("item", "Level Upgraded!");
+		player->hud->HandleNamedEvent("itemPickup");
 		gameLocal.Printf("up to lvl 2\n");
 		break;
 	case 2:
@@ -72,15 +74,21 @@ void playerabilities::upgrade(idEntity* attacker, int lvl)
 		player->health = player->inventory.maxHealth;
 		player->lvl = 3;
 		player->points -= price;
+		player->hud->SetStateString("item", "Level Upgraded!");
+		player->hud->HandleNamedEvent("itemPickup");
 		gameLocal.Printf("up to lvl 3\n");
 		break;
 	case 3:
 		player->damagescale = 2;
 		player->lvl = 4;
 		player->points -= price;
-		gameLocal.Printf("up to lvl 3\n");
+		player->hud->SetStateString("item", "Level Upgraded!");
+		player->hud->HandleNamedEvent("itemPickup");
+		gameLocal.Printf("up to lvl 4\n");
 		break;
 	default:
+		player->hud->SetStateString("item", "Major Level Reached!");
+		player->hud->HandleNamedEvent("itemPickup");
 		gameLocal.Printf("Major Level Reached!");
 		break;
 	}
@@ -101,6 +109,8 @@ void playerabilities::Damage(idEntity* inflictor, idEntity* attacker, const idVe
 		}
 		else
 		{
+			player->hud->SetStateString("item", "Not Enough Money");
+			player->hud->HandleNamedEvent("itemPickup");
 			gameLocal.Printf("can't buy\n");
 		}
 	}

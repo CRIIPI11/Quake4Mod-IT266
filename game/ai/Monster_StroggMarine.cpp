@@ -18,6 +18,10 @@ public:
 	void				Spawn							( void );
 	void				Save							( idSaveGame *savefile ) const;
 	void				Restore							( idRestoreGame *savefile );
+	virtual bool			Attack(const char* attackName, jointHandle_t joint, idEntity* target, const idVec3& pushVelocity = vec3_origin);
+	virtual	void		Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir, const char* damageDefName, const float damageScale, const int location);
+
+
 
 protected:
 
@@ -110,10 +114,12 @@ void rvMonsterStroggMarine::Spawn ( void ) {
 
 	InitSpawnArgsVariables();
 	
+	
 
 	shots	 = 0;
 	shotsFired = 0;
 	thinkcount = 0;
+	ClearEnemy();
 }
 
 /*
@@ -177,10 +183,7 @@ void rvMonsterStroggMarine::OnStopMoving ( aiMoveCommand_t oldMoveCommand ) {
 		if ( combat.tacticalCurrent == AITACTICAL_HIDE )
 		{
 		}
-		else if ( combat.tacticalCurrent == AITACTICAL_MELEE )
-		{
-			actionMeleeAttack.timer.Clear( actionTime );
-		}
+		
 		else
 		{
 			actionRangedAttack.timer.Clear( actionTime );
@@ -243,7 +246,7 @@ void rvMonsterStroggMarine::Think(void) {
 
 		if (!move.fl.allowHiddenMove && IsHidden()) {
 			// hidden monsters
-			UpdateStates();
+			UpdateStatesstrogg();
 		}
 		else if (!ai_freeze.GetBool()) {
 			Prethink();
@@ -257,19 +260,11 @@ void rvMonsterStroggMarine::Think(void) {
 			}
 
 			// update state machine
-			UpdateStates();
-
-
-			if (gameLocal.time < 300000)
-			{
-				FaceEnemy();
-			}
-
-
+			UpdateStatesstrogg();
+			
 			// run all movement commands
 			Move();
-						
-			
+								
 			// if not dead, chatter and blink
 			if (move.moveType != MOVETYPE_DEAD) {
 				UpdateChatter();
@@ -883,4 +878,69 @@ stateResult_t rvMonsterStroggMarine::State_Torso_SprayAttack ( const stateParms_
 	return SRESULT_ERROR; 
 }
 
+bool rvMonsterStroggMarine::Attack(const char* attackName, jointHandle_t joint, idEntity* target, const idVec3& pushVelocity) {
+	// Get the attack dictionary
+	const idDict* attackDict;
+	attackDict = gameLocal.FindEntityDefDict(spawnArgs.GetString(va("def_attack_%s", attackName)), false);
+	if (!attackDict) {
+		gameLocal.Error("could not find attack entityDef 'def_attack_%s (%s)' on AI entity %s", attackName, spawnArgs.GetString(va("def_attack_%s", attackName)), GetName());
+	}
 
+	// Melee Attack?
+
+
+	// Ranged attack (hitscan or projectile)?
+	return (AttackRanged(attackName, attackDict, joint, target, pushVelocity) != NULL);
+}
+
+
+
+void rvMonsterStroggMarine::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir, const char* damageDefName, const float damageScale, const int location)
+{
+	if (forwardDamageEnt.IsValid()) {
+		forwardDamageEnt->Damage(inflictor, attacker, dir, damageDefName, damageScale, location);
+		return;
+	}
+
+	if (!fl.takedamage) {
+		return;
+	}
+
+	if (!inflictor) {
+		inflictor = gameLocal.world;
+	}
+
+	if (!attacker) {
+		attacker = gameLocal.world;
+	}
+
+	const idDict* damageDef = gameLocal.FindEntityDefDict(damageDefName, false);
+	if (!damageDef) {
+		gameLocal.Error("Unknown damageDef '%s'\n", damageDefName);
+	}
+
+
+	int	damage = damageDef->GetInt("damage");
+
+	// inform the attacker that they hit someone
+	attacker->DamageFeedback(this, inflictor, damage);
+	if (damage) {
+		// do the damage
+		//jshepard: this is kinda important, no?
+		health -= damage;
+
+		if (health <= 0) {
+			if (health < -999) {
+				health = -999;
+			}
+
+			Killed(inflictor, attacker, damage, dir, location);
+		}
+		else {
+			Pain(inflictor, attacker, damage, dir, location);
+		}
+	}
+
+	SetEnemy(attacker);
+
+}

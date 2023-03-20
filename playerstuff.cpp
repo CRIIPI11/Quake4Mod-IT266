@@ -76,6 +76,11 @@ void playerstuff::give(idEntity* attacker)
 			player->health = player->inventory.maxHealth;
 			player->points -= price;
 		}
+		else
+		{
+			player->hud->SetStateString("item", "Not Enough Money");
+			player->hud->HandleNamedEvent("itemPickup");
+		}
 		return;
 	}
 
@@ -85,6 +90,11 @@ void playerstuff::give(idEntity* attacker)
 		{
 			player->inventory.armor = player->inventory.maxarmor;
 			player->points -= price;
+		}
+		else
+		{
+			player->hud->SetStateString("item", "Not Enough Money");
+			player->hud->HandleNamedEvent("itemPickup");
 		}
 		return;
 	}
@@ -105,6 +115,11 @@ void playerstuff::give(idEntity* attacker)
 				}
 				gameLocal.Printf("clip size  %i\n", clip);
 			}
+			else
+			{
+				player->hud->SetStateString("item", "Not Enough Money");
+				player->hud->HandleNamedEvent("itemPickup");
+			}
 			return;
 		}
 		else
@@ -117,19 +132,15 @@ void playerstuff::give(idEntity* attacker)
 				bought = TRUE;
 				price /= 2;
 			}
+			else
+			{
+				player->hud->SetStateString("item", "Not Enough Money");
+				player->hud->HandleNamedEvent("itemPickup");
+			}
 			return;
 		}
 
 	}
-
-	//might fail (?)
-	if (idStr::Icmp(spawnArgs.GetString("item", ""), "wpMod") == 0)
-	{
-		player->GiveWeaponMods(1);
-
-	}
-
-
 	gameLocal.Printf("player points: %i\n", player->points);
 
 }

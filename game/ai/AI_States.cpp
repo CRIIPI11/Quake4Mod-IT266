@@ -215,9 +215,20 @@ stateResult_t idAI::State_Combat ( const stateParms_t& parms ) {
 			// Update the tactical state using all available tactical abilities and reset
 			// the current tactical state since this is the generic state.
 			combat.tacticalCurrent = AITACTICAL_NONE;
-			if ( UpdateTactical ( 0 ) ) {
-				return SRESULT_DONE_WAIT;
+			
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (UpdateTactical(0)) {
+					return SRESULT_DONE_WAIT;
+				}
 			}
+			else
+			{
+				if (UpdateTacticalstrogg(0)) {
+					return SRESULT_DONE_WAIT;
+				}
+			}
+					
 
 			// Perform actions			
 			if ( UpdateAction ( ) ) {
@@ -309,33 +320,67 @@ stateResult_t idAI::State_CombatMelee ( const stateParms_t& parms ) {
 	switch ( parms.stage ) {
 		case STAGE_MOVE:
 			// If we can no longer get to our enemy, give up on this and do something else!
-			if ( move.moveStatus == MOVE_STATUS_DEST_UNREACHABLE ) {
-				ForceTacticalUpdate ( );
-				UpdateTactical ( 0 );
-				return SRESULT_DONE_WAIT;
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (!enemy.fl.inFov) {
+					ForceTacticalUpdate();
+					UpdateTactical(0);
+					return SRESULT_DONE_WAIT;
+				}
 			}
+			else
+			{
+				if (move.moveStatus == MOVE_STATUS_DEST_UNREACHABLE) {
+					ForceTacticalUpdate();
+					UpdateTacticalstrogg(0);
+					return SRESULT_DONE_WAIT;
+				}
+			}
+			
+			
 			// Attack when we have either stopped moving or are within melee range
-			if ( move.fl.done ) {
-				StopMove ( MOVE_STATUS_DONE );
-				return SRESULT_STAGE ( STAGE_ATTACK );
-			}
+			
 			// Perform actions on the way to the enemy
 			if ( UpdateAction ( ) ) {
 				return SRESULT_WAIT;
 			}
 			// Update tactical state occasionally
-			if ( UpdateTactical ( TACTICALUPDATE_MELEEDELAY ) ) {
-				return SRESULT_DONE_WAIT;
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (UpdateTactical(TACTICALUPDATE_MELEEDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
 			}
+			else
+			{
+				if (UpdateTacticalstrogg(TACTICALUPDATE_MELEEDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
+			}
+
+			
 			return SRESULT_WAIT;
 	
 		case STAGE_ATTACK:
-			// If we are out of melee range or lost sight of our enemy then start moving again			
-			if ( !IsEnemyVisible ( ) ) {
-				ForceTacticalUpdate ( );
-				UpdateTactical ( 0 );
-				return SRESULT_DONE_WAIT;
+			// If we are out of melee range or lost sight of our enemy then start moving again
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (!IsEnemyVisible()) {
+					ForceTacticalUpdate();
+					UpdateTactical(0);
+					return SRESULT_DONE_WAIT;
+				}
 			}
+			else
+			{
+				if (!IsEnemyVisible()) {
+					ForceTacticalUpdate();
+					UpdateTacticalstrogg(0);
+					return SRESULT_DONE_WAIT;
+				}
+			}
+
+			
 			// Always face enemy when in melee range
 			TurnToward ( enemy.lastKnownPosition );
 
@@ -345,9 +390,19 @@ stateResult_t idAI::State_CombatMelee ( const stateParms_t& parms ) {
 			}
 
 			// Update tactical state occasionally
-			if ( UpdateTactical ( TACTICALUPDATE_MELEEDELAY ) ) {
-				return SRESULT_DONE_WAIT;
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (UpdateTactical(TACTICALUPDATE_MELEEDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
 			}
+			else
+			{
+				if (UpdateTacticalstrogg(TACTICALUPDATE_MELEEDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
+			}
+			
 			return SRESULT_WAIT;
 	}
 	return SRESULT_ERROR;
@@ -370,9 +425,19 @@ stateResult_t idAI::State_CombatRanged ( const stateParms_t& parms ) {
 			// if we lost our enemy we are done here
 			if ( !enemy.ent ) {
 				ForceTacticalUpdate ( );
-				if ( UpdateTactical ( 0 ) ) {
-					return SRESULT_DONE_WAIT;
+				if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+				{
+					if (UpdateTactical(0)) {
+						return SRESULT_DONE_WAIT;
+					}
 				}
+				else
+				{
+					if (UpdateTacticalstrogg(0)) {
+						return SRESULT_DONE_WAIT;
+					}
+				}
+				
 				return SRESULT_WAIT;
 			}			
 			// If done moving or within range of a visible enemy we can stop
@@ -393,9 +458,20 @@ stateResult_t idAI::State_CombatRanged ( const stateParms_t& parms ) {
 				return SRESULT_STAGE ( STAGE_ATTACK );
 			}			
 			// Update tactical state occasionally
-			if ( UpdateTactical ( TACTICALUPDATE_RANGEDDELAY ) ) {
-				return SRESULT_DONE_WAIT;
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (UpdateTactical(TACTICALUPDATE_RANGEDDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
 			}
+			else
+			{
+				if (UpdateTacticalstrogg(TACTICALUPDATE_RANGEDDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
+			}
+
+			
 			// Perform actions along the way
 			if ( UpdateAction ( ) ) {
 				return SRESULT_WAIT;
@@ -408,9 +484,19 @@ stateResult_t idAI::State_CombatRanged ( const stateParms_t& parms ) {
 				TurnToward ( enemy.lastKnownPosition );
 			}			
 			// Update tactical state occasionally
-			if ( UpdateTactical ( TACTICALUPDATE_RANGEDDELAY ) ) {
-				return SRESULT_DONE_WAIT;
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (UpdateTactical(TACTICALUPDATE_RANGEDDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
 			}
+			else
+			{
+				if (UpdateTacticalstrogg(TACTICALUPDATE_RANGEDDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
+			}
+			
 			// Perform actions
 			if ( UpdateAction ( ) ) {
 				return SRESULT_WAIT;
@@ -454,9 +540,21 @@ stateResult_t idAI::State_CombatTurret ( const stateParms_t& parms ) {
 	// If there are other available tactical states besides turret then try to
 	// go to one of them
 	if ( combat.tacticalMaskAvailable & ~(1<<AITACTICAL_TURRET) ) {
-		if ( UpdateTactical ( TACTICALUPDATE_TURRETDELAY ) ) {
-			return SRESULT_DONE_WAIT;
+
+		if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+		{
+			if (UpdateTactical(TACTICALUPDATE_TURRETDELAY)) {
+				return SRESULT_DONE_WAIT;
+			}
 		}
+		else
+		{
+			if (UpdateTacticalstrogg(TACTICALUPDATE_TURRETDELAY)) {
+				return SRESULT_DONE_WAIT;
+			}
+		}
+
+		
 	}
 
 	return SRESULT_WAIT;
@@ -475,9 +573,19 @@ stateResult_t idAI::State_CombatHide ( const stateParms_t& parms ) {
 		}
 	}
 
-	if ( UpdateTactical ( TACTICALUPDATE_HIDEDELAY ) ) {
-		return SRESULT_DONE_WAIT;
+	if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+	{
+		if (UpdateTactical(TACTICALUPDATE_HIDEDELAY)) {
+			return SRESULT_DONE_WAIT;
+		}
 	}
+	else
+	{
+		if (UpdateTacticalstrogg(TACTICALUPDATE_HIDEDELAY)) {
+			return SRESULT_DONE_WAIT;
+		}
+	}
+
 
 	// Perform actions
 	if ( UpdateAction ( ) ) {
@@ -525,15 +633,27 @@ stateResult_t idAI::State_MoveTether ( const stateParms_t& parms ) {
 		STAGE_MOVE,
 		STAGE_DONE,
 	};
-
+	
 	switch ( parms.stage ) {
 		case STAGE_MOVE:
 			// If we lost our tether then let UpdateTactical figure out what to do next
 			if ( !tether ) {
-				if ( UpdateTactical ( 0 ) ) {
-					return SRESULT_DONE_WAIT;
+
+				if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+				{
+					if ( UpdateTactical ( 0 ) ) {
+						return SRESULT_DONE_WAIT;
+					}
+					return SRESULT_WAIT;
 				}
-				return SRESULT_WAIT;
+				else
+				{
+					if (UpdateTacticalstrogg(0)) {
+						return SRESULT_DONE_WAIT;
+					}
+					return SRESULT_WAIT;
+				}
+				
 			}		
 			// Stopped moving?
 			if ( move.fl.done ) {
@@ -556,19 +676,43 @@ stateResult_t idAI::State_MoveTether ( const stateParms_t& parms ) {
 				return SRESULT_STAGE ( STAGE_DONE );
 			}			
 			// Update tactical state occasionally to see if there is something better to do
-			if ( UpdateTactical ( TACTICALUPDATE_MOVETETHERDELAY ) ) {
-				return SRESULT_DONE_WAIT;
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (UpdateTactical(TACTICALUPDATE_MOVETETHERDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
 			}
+			else
+			{
+				if (UpdateTacticalstrogg(TACTICALUPDATE_MOVETETHERDELAY)) {
+					return SRESULT_DONE_WAIT;
+				}
+			}
+			
+
+			
 			// Perform actions on the way to the enemy
 			if ( UpdateAction ( ) ) {
 				return SRESULT_WAIT;
 			}
 
 		case STAGE_DONE:
-			if ( UpdateTactical ( ) ) {
-				return SRESULT_DONE_WAIT;
+
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (UpdateTactical()) {
+					return SRESULT_DONE_WAIT;
+				}
+				return SRESULT_WAIT;
 			}
-			return SRESULT_WAIT;
+			else
+			{
+				if (UpdateTacticalstrogg()) {
+					return SRESULT_DONE_WAIT;
+				}
+				return SRESULT_WAIT;
+			}
+			
 	}
 	
 	return SRESULT_ERROR;
@@ -649,15 +793,35 @@ stateResult_t idAI::State_MovePlayerPush ( const stateParms_t& parms ) {
 				ForceTacticalUpdate ( );
 				return SRESULT_STAGE ( STAGE_DONE );
 			} else if ( gameLocal.GetTime() - move.startTime > 2000 ) {
-				if ( UpdateTactical ( ) ) {
-					return SRESULT_DONE_WAIT;
+				if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+				{
+					if (UpdateTactical()) {
+						return SRESULT_DONE_WAIT;
+					}
 				}
+				else
+				{
+					if (UpdateTacticalstrogg()) {
+						return SRESULT_DONE_WAIT;
+					}
+				}
+				
 			}
 			return SRESULT_WAIT;
 
 		case STAGE_DONE:
-			if ( UpdateTactical ( ) ) {
-				return SRESULT_DONE_WAIT;
+
+			if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+			{
+				if (UpdateTactical()) {
+					return SRESULT_DONE_WAIT;
+				}
+			}
+			else
+			{
+				if (UpdateTacticalstrogg()) {
+					return SRESULT_DONE_WAIT;
+				}
 			}
 			return SRESULT_WAIT;
 	}
@@ -904,7 +1068,16 @@ stateResult_t idAI::State_ScriptedStop ( const stateParms_t& parms ) {
 	// revert back to normal combat
 	if ( aifl.scriptedEndWithIdle ) {
 		ForceTacticalUpdate ( );
-		UpdateTactical ( 0 );
+
+		if (idStr::Icmp(this->spawnArgs.GetString("classname"), "char_marine") == 0)
+		{
+			UpdateTactical(0);
+		}
+		else
+		{
+			UpdateTacticalstrogg(0);
+		}
+		
 	}
 	
 	return SRESULT_DONE;
@@ -1608,7 +1781,7 @@ bool idAI::UpdateTactical ( int delay ) {
 	assert ( !aifl.action );
 	
 	// No movement updating on simple think (if the update is forced do it anyway)
-	if ( combat.tacticalUpdateTime  && !combat.tacticalMaskUpdate ) {
+	if ( combat.tacticalUpdateTime && aifl.simpleThink && !combat.tacticalMaskUpdate ) {
 		return false;
 	}
 	// Don't let tactical updates pre-empt pain actions
@@ -1681,6 +1854,89 @@ bool idAI::UpdateTactical ( int delay ) {
 		aiManager.timerTactical.Stop ( );
 	}
 	
+	return result;
+}
+
+bool idAI::UpdateTacticalstrogg(int delay) {
+	// Update tactical cannot be called while performing an action and it must be called from the main state loop
+	assert(!aifl.action);
+
+	// No movement updating on simple think (if the update is forced do it anyway)
+	if (combat.tacticalUpdateTime && !combat.tacticalMaskUpdate) {
+		return false;
+	}
+	// Don't let tactical updates pre-empt pain actions
+	if (pain.takenThisFrame) {
+		return false;
+	}
+
+	// AI Speeds
+	if (ai_speeds.GetBool()) {
+		aiManager.timerFindEnemy.Start();
+	}
+
+	// Keep the enemy status up to date
+	if (!combat.fl.ignoreEnemies) {
+		// If we dont have an enemy or havent seen our enemy for a while just find a new one entirely
+		if (gameLocal.time - enemy.checkTime > 250) {
+			CheckForEnemy(true, true);
+		}
+		else if (!IsEnemyRecentlyVisible()) {
+			CheckForEnemy(true);
+		}
+	}
+
+	// AI Speeds
+	if (ai_speeds.GetBool()) {
+		aiManager.timerFindEnemy.Stop();
+	}
+
+	// We have sighted an enemy so execute the sight state
+	if (IsEnemyVisible() && !enemy.fl.sighted) {
+		PerformAction("Torso_Sight", 4, true);
+		return true;
+	}
+
+	// continue with the last updatetactical if we still have bits left to check in our update mask
+	if (!combat.tacticalMaskUpdate) {
+		// Ignore the tactical delay if we are taking too much damage here.
+		// TODO: use skipcurrentdestination instead
+		if (!combat.tacticalPainThreshold || combat.tacticalPainTaken < combat.tacticalPainThreshold) {
+			// Delay tactical updating?
+			if (combat.tacticalUpdateTime && move.moveStatus != MOVE_STATUS_BLOCKED_BY_ENEMY && delay && (gameLocal.time - combat.tacticalUpdateTime) < delay) {
+				return false;
+			}
+		}
+
+		// handle Auto break tethers
+		if (IsTethered() && tether->IsAutoBreak() && IsWithinTether()) {
+			tether = NULL;
+		}
+
+		// Filter the tactical
+		combat.tacticalMaskUpdate = FilterTactical(combat.tacticalMaskAvailable);
+	}
+	else {
+		// Make sure all cached tactical updates are still valid
+		combat.tacticalMaskUpdate &= FilterTactical(combat.tacticalMaskAvailable);
+		if (!combat.tacticalMaskUpdate) {
+			return false;
+		}
+	}
+
+	// AI Speeds
+	if (ai_speeds.GetBool()) {
+		aiManager.timerTactical.Start();
+	}
+
+	// Recursively look for a better tactical state
+	bool result = UpdateTactical_r();
+
+	// AI Speeds
+	if (ai_speeds.GetBool()) {
+		aiManager.timerTactical.Stop();
+	}
+
 	return result;
 }
 
@@ -1769,8 +2025,8 @@ bool idAI::UpdateTactical_r ( void ) {
 			case AITACTICAL_COVER_RETREAT:
 			case AITACTICAL_COVER_AMBUSH:
 				result = MoveToCover ( combat.attackRange[0], combat.attackRange[1], newTactical );
-				break;				
-				
+				break;	
+
 			case AITACTICAL_RANGED:
 				result = MoveToAttack ( enemy.ent, animator.GetAnim ( "ranged_attack" ) );
 				// Found nothing but still have a find going
@@ -1779,10 +2035,10 @@ bool idAI::UpdateTactical_r ( void ) {
 					combat.tacticalMaskUpdate |= AITACTICAL_RANGED_BIT;
 					return false;
 				}
-				break;
-				
+				break;		
+
 			case AITACTICAL_MELEE:
-				result = MoveToEnemy ( );
+				result = MoveToEnemy();
 				break;
 
 			case AITACTICAL_PASSIVE:
@@ -2040,6 +2296,7 @@ aiCTResult_t idAI::CheckTactical ( aiTactical_t tactical ) {
 			// We are still heading towards our tether so dont reissue a move
 			return AICTRESULT_NOMOVE;
 		
+	
 		case AITACTICAL_RANGED:
 			// Currently issuing a find
 			if ( dynamic_cast<rvAASFindGoalForAttack*>(aasFind) ) {
@@ -2073,12 +2330,13 @@ aiCTResult_t idAI::CheckTactical ( aiTactical_t tactical ) {
 			// Our position is fine so just stay in ranged combat
 			return AICTRESULT_NOMOVE;
 			
-		case AITACTICAL_MELEE:
+		
 			// IF we are already moving towards our enemy then we dont need a state change
-			if ( move.fl.moving && move.moveCommand == MOVE_TO_ENEMY && move.goalEntity == enemy.ent ) {
-				return AICTRESULT_NOMOVE;
-			}
-			return AICTRESULT_OK;
+			case AITACTICAL_MELEE:		
+				if (move.fl.moving && move.moveCommand == MOVE_TO_ENEMY && move.goalEntity == enemy.ent) {
+					return AICTRESULT_NOMOVE;
+				}
+				return AICTRESULT_OK;
 			
 		case AITACTICAL_COVER:
 		case AITACTICAL_COVER_FLANK:

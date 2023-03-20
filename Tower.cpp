@@ -25,6 +25,7 @@ void rvTower::Spawn(void) {
 	physicsObj.GetClipModel()->Link();
 	healthRegenNextTime = 0;
 	healthRegen = 15;
+	ActivatePhysics(this);
 	
 }
 

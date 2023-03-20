@@ -66,15 +66,15 @@ void TowerUpgrade::upgrade(idEntity* attacker, int lvl)
 	int oldhealth;
 	int i;
 
-	player = static_cast<idPlayer*>(attacker);
-	gameLocal.Printf("player points: %i\n", player->points);
-		
+	player = static_cast<idPlayer*>(attacker);		
 	switch (rvTower::lvl)
 	{
 	case 1:
 		rvTower::healthRegenEnabled = TRUE;
 		rvTower::lvl = 2;
 		player->points -= price;
+		player->hud->SetStateString("item", "Tower Updgraded: Health Regeneration");
+		player->hud->HandleNamedEvent("itemPickup");
 		gameLocal.Printf("up to lvl 2\n");
 		break;
 	case 2:
@@ -90,12 +90,16 @@ void TowerUpgrade::upgrade(idEntity* attacker, int lvl)
 		}
 		rvTower::lvl = 3;
 		player->points -= price;
+		player->hud->SetStateString("item", "Tower Updgraded: Increased Health");
+		player->hud->HandleNamedEvent("itemPickup");
 		gameLocal.Printf("up to lvl 3\n");
 		break;
 	case 3:
 		rvTower::poisonIvy = TRUE;
 		rvTower::lvl = 4;
 		player->points -= price;
+		player->hud->SetStateString("item", "Tower Updgraded!: Poison Ability");
+		player->hud->HandleNamedEvent("itemPickup");
 		gameLocal.Printf("up to lvl 4\n");
 		break;
 	case 4:
@@ -103,9 +107,13 @@ void TowerUpgrade::upgrade(idEntity* attacker, int lvl)
 		rvTower::poisonscale *= 3;
 		rvTower::lvl = 5;
 		player->points -= price;
+		player->hud->SetStateString("item", "Tower Updgraded!");
+		player->hud->HandleNamedEvent("itemPickup");
 		gameLocal.Printf("up to lvl 5\n");
 		break;
 	default:
+		player->hud->SetStateString("item", "Major Level Reached!");
+		player->hud->HandleNamedEvent("itemPickup");
 		gameLocal.Printf("Major Level Reached!");
 		break;
 	}
@@ -120,15 +128,19 @@ void TowerUpgrade::Damage(idEntity* inflictor, idEntity* attacker, const idVec3&
 		return;
 	}
 
+
 	if (attacker->IsType(idPlayer::GetClassType()))
 	{
-		
+		player = static_cast<idPlayer*>(attacker);
+
 		if ((player->points - price) >= 0 )
 		{
 			upgrade(attacker, rvTower::lvl);
 		}
 		else
 		{
+			player->hud->SetStateString("item", "Not Enough Points");
+			player->hud->HandleNamedEvent("itemPickup");
 			gameLocal.Printf("can't buy\n");
 		}
 	}

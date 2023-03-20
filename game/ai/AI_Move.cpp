@@ -796,7 +796,6 @@ bool idAI::FaceEnemy( void ) {
 	move.moveCommand		= MOVE_FACE_ENEMY;
 	move.moveStatus			= MOVE_STATUS_WAITING;
 	move.startTime			= gameLocal.time;
-	move.speed				= 2.0f;
 	
 	move.fl.done			= false;
 	move.fl.moving			= true;

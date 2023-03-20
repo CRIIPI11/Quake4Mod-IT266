@@ -2069,7 +2069,7 @@ void idPlayer::Spawn( void ) {
 	//=================criipi
 	oldtime = gameLocal.time;
 	gameLocal.Printf("start time: %i\n\n\n", oldtime);
-	points = 0;
+	points = 100;
 	damagescale = 1;
 
 }
@@ -3407,6 +3407,7 @@ idPlayer::UpdateHudStats
 void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	int temp;
 	rvTower* tower;
+	int bol = 0;
 	
 	assert ( _hud );
 
@@ -3525,12 +3526,28 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	}
 
 	//-----------------criipi
-	if (gameLocal.time > oldtime+200000)
-	{
-		hud->HandleNamedEvent("Descdown");
-	}
 
 	_hud->SetStateInt("points", points);
+
+
+	switch (lvl)
+	{
+	case 1:
+		_hud->SetStateString("pllvl", "Level 1");
+		break;
+	case 2:
+		_hud->SetStateString("pllvl", "Level 2");
+		break;
+	case 3:
+		_hud->SetStateString("pllvl", "Level 3");
+		break;
+	case 4:
+		_hud->SetStateString("pllvl", "Level 4");
+		break;
+	default:
+		break;
+	}
+	
 
 	_hud->StateChanged( gameLocal.time );
 }
@@ -3877,6 +3894,8 @@ void idPlayer::DrawHUD( idUserInterface *_hud ) {
 			overlayHudTime = 0;
 		}
 	}
+
+
 }
 
 /*

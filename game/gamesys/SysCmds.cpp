@@ -530,10 +530,16 @@ void GiveStuffToPlayer( idPlayer* player, const char* name, const char* value )
 		player->Give ( name, "" );
 		return;
 	}
+	if (idStr::Icmp(name, "points") == 0) {
+			player->points += 10000;
+			return;
+		}
 
 	if ( !give_all && !player->Give( name, value ) ) {
 		gameLocal.Printf( "unknown item\n" );
 	}
+
+	
 }
 
 /*

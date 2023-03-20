@@ -782,6 +782,7 @@ public:
 
 	// AI script state management
 	void					UpdateStates					( void );
+	void					UpdateStatesstrogg				( void );
 	void					UpdateFocus						( const idMat3& orientationAxis );
 	void					SetFocus						( aiFocus_t focus, int time );
 
@@ -879,6 +880,7 @@ public:
 
 	virtual bool				UpdateRunStatus					( void );
 	bool						UpdateTactical					( int delay = 0 );
+	bool						UpdateTacticalstrogg			( int delay = 0 );
 	void						ForceTacticalUpdate				( void );
 	bool						UpdateTactical_r				( void );
 	virtual int					FilterTactical					( int availableTactical );

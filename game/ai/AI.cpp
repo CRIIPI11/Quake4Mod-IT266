@@ -817,7 +817,7 @@ void idAI::Spawn( void ) {
 	actionEvadeLeft.Init		( spawnArgs, "action_evadeLeft",		NULL,					0 );
 	actionEvadeRight.Init		( spawnArgs, "action_evadeRight",		NULL, 					0 );
 	actionRangedAttack.Init		( spawnArgs, "action_rangedAttack",		NULL, 					AIACTIONF_ATTACK );
-	actionMeleeAttack.Init		( spawnArgs, "action_meleeAttack",		NULL, 					AIACTIONF_ATTACK|AIACTIONF_MELEE );
+	actionMeleeAttack.Init		( spawnArgs, "action_meleeAttack",		NULL, 					AIACTIONF_ATTACK | AIACTIONF_MELEE);
 	actionLeapAttack.Init		( spawnArgs, "action_leapAttack",		NULL, 					AIACTIONF_ATTACK );
 	actionJumpBack.Init			( spawnArgs, "action_jumpBack",			NULL, 					0 );
 			
@@ -1367,12 +1367,13 @@ void idAI::UpdateFocus ( const idMat3& orientationAxis ) {
 idAI::UpdateStates
 =====================
 */
+
 void idAI::UpdateStates ( void ) {
 	MEM_SCOPED_TAG(tag,MA_DEFAULT);
 
 	// Continue updating tactical state if for some reason we dont have one 
 	if ( !aifl.dead && !aifl.scripted && !aifl.action && stateThread.IsIdle ( ) && aifl.scriptedEndWithIdle ) {
-		UpdateTactical ( 1 );
+		UpdateTactical ( 0 );
 	} else {
 		UpdateState();
 	}
@@ -1381,6 +1382,28 @@ void idAI::UpdateStates ( void ) {
 	aifl.hitEnemy = false;
 
 	if ( move.fl.allowHiddenMove || !IsHidden() ) {
+		// update the animstate if we're not hidden
+		UpdateAnimState();
+	}
+
+	
+}
+
+void idAI::UpdateStatesstrogg(void) {
+	MEM_SCOPED_TAG(tag, MA_DEFAULT);
+
+	// Continue updating tactical state if for some reason we dont have one 
+	if (!aifl.dead && !aifl.scripted && !aifl.action && stateThread.IsIdle() && aifl.scriptedEndWithIdle) {
+		UpdateTacticalstrogg(0);
+	}
+	else {
+		UpdateState();
+	}
+
+	// clear the hit enemy flag so we catch the next time we hit someone
+	aifl.hitEnemy = false;
+
+	if (move.fl.allowHiddenMove || !IsHidden()) {
 		// update the animstate if we're not hidden
 		UpdateAnimState();
 	}
@@ -1805,7 +1828,7 @@ void idAI::Activate( idEntity *activator ) {
 	}
 
 	if ( ReactionTo( player ) & ATTACK_ON_ACTIVATE ) {
-		SetEnemy( gameLocal.FindEntity("tower"));
+		
 	}
 	
 	// If being activated by a spawner we need to attach to it
