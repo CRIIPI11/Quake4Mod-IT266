@@ -795,12 +795,20 @@ public:
 	void					SetCash( float newCashAmount );
 	void					ResetCash();
 // RITUAL END
+//============criipi======	
+	int   points;
+	int damagescale;
+	int	lvl;
 
 protected:
 	void					SetupHead( const char* modelKeyName = "", idVec3 headOffset = idVec3(0, 0, 0) );
 
 private:
 	float					vehicleCameraDist;
+
+	//--------criipi
+	int		oldtime;
+	
 
 	jointHandle_t			hipJoint;
 	jointHandle_t			chestJoint;
@@ -943,6 +951,7 @@ private:
 	idVec3					predictionOriginError;
 	idAngles				predictionAnglesError;
 	int						predictionErrorTime;
+	
 
 	// mp
  	bool					ready;					// from userInfo
@@ -995,6 +1004,11 @@ private:
 
 	int						lastImpulseTime;		// time of last impulse
 	idEntityPtr<idEntity>	bossEnemy;
+	idEntity*	Tower1;
+	idEntityPtr<idEntity>	Tower2;
+	idEntityPtr<idEntity>	Tower3;
+	idEntityPtr<idEntity>	Tower4;
+	idEntityPtr<idEntity>	Tower5;
 
 	const idDeclEntityDef*	cachedWeaponDefs[ MAX_WEAPONS ];
 	const idDeclEntityDef*	cachedPowerupDefs[ POWERUP_MAX ];

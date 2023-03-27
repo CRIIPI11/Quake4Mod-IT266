@@ -17,6 +17,7 @@
 #include "ai/AAS_tactical.h"
 #include "Healing_Station.h"
 #include "ai/AI_Medic.h"
+#include "../Tower.h"
 
 // RAVEN BEGIN
 // nrausch: support for turning the weapon change ui on and off
@@ -1081,6 +1082,10 @@ idPlayer::idPlayer() {
 
 	alreadyDidTeamAnnouncerSound = false;
 
+	//-------criipi
+	fl.notarget = true;
+	//-------criipi
+
 	doInitWeapon			= false;
 	noclip					= false;
 	godmode					= false;
@@ -1498,6 +1503,10 @@ idPlayer::Init
 void idPlayer::Init( void ) {
 	const char			*value;
 	
+	//-------criipi
+	fl.notarget = true;
+	//-------criipi
+
 	noclip					= false;
 	godmode					= false;
 	godmodeDamage			= 0;
@@ -1809,6 +1818,7 @@ void idPlayer::Spawn( void ) {
 	idStr		temp;
 	idBounds	bounds;
 
+	lvl = 1;
 	if ( entityNumber >= MAX_CLIENTS ) {
 		gameLocal.Error( "entityNum > MAX_CLIENTS for player.  Player may only be spawned with a client." );
 	}
@@ -2055,6 +2065,13 @@ void idPlayer::Spawn( void ) {
 //RITUAL END
 
 	itemCosts = static_cast< const idDeclEntityDef * >( declManager->FindType( DECL_ENTITYDEF, "ItemCostConstants", false ) );
+	
+	//=================criipi
+	oldtime = gameLocal.time;
+	gameLocal.Printf("start time: %i\n\n\n", oldtime);
+	points = 100;
+	damagescale = 1;
+
 }
 
 /*
@@ -3389,6 +3406,8 @@ idPlayer::UpdateHudStats
 */
 void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	int temp;
+	rvTower* tower;
+	int bol = 0;
 	
 	assert ( _hud );
 
@@ -3409,6 +3428,7 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	}
 	
 	// Boss bar
+	
 	if ( _hud->State().GetInt ( "boss_health", "-1" ) != (bossEnemy ? bossEnemy->health : -1) ) {
 		if ( !bossEnemy || bossEnemy->health <= 0 ) {
 			bossEnemy = NULL;
@@ -3416,8 +3436,77 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 			_hud->HandleNamedEvent ( "hideBossBar" );			
  			_hud->HandleNamedEvent ( "hideBossShieldBar" ); // grrr, for boss buddy..but maybe other bosses will have shields?
 		} else {			
-			_hud->SetStateInt ( "boss_health", bossEnemy->health );
+			_hud->SetStateInt ( "boss_health", bossEnemy->health);
 			_hud->HandleNamedEvent ( "updateBossBar" );
+		}
+	}
+
+	//Tower =========== criipi
+
+	Tower1 = gameLocal.FindEntity("tower_1");
+
+	if (_hud->State().GetInt("tower_health", "-1") != (Tower1 ? Tower1->health : -1)) {
+		if (!Tower1 || Tower1->health <= 0) {
+			_hud->SetStateInt("tower_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower_maxhealth", rvTower::maxHealth);
+			_hud->SetStateInt("tower_health", Tower1->health);
+			_hud->HandleNamedEvent("updateTower");
+		}
+	}
+	
+	//----------
+	Tower2 = gameLocal.FindEntity("tower_2");
+	if (_hud->State().GetInt("tower2_health", "-1") != (Tower2 ? Tower2->health : -1)) {
+		if (!Tower2 || Tower2->health <= 0) {
+			Tower2 = NULL;
+			_hud->SetStateInt("Tower2_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower2_maxhealth", rvTower::maxHealth);
+			_hud->SetStateInt("tower2_health", Tower2->health);
+			_hud->HandleNamedEvent("updateTowerBar");
+		}
+	}
+	//----------
+	Tower3 = gameLocal.FindEntity("tower_3");
+	if (_hud->State().GetInt("tower3_health", "-1") != (Tower3 ? Tower3->health : -1)) {
+		if (!Tower3 || Tower3->health <= 0) {
+			Tower3 = NULL;
+			_hud->SetStateInt("Tower3_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower3_maxhealth", rvTower::maxHealth);
+			_hud->SetStateInt("tower3_health", Tower3->health);
+			_hud->HandleNamedEvent("updateTowerBar");
+		}
+	}
+	//---------
+	Tower4 = gameLocal.FindEntity("tower_4");
+	if (_hud->State().GetInt("tower4_health", "-1") != (Tower4 ? Tower4->health : -1)) {
+		if (!Tower4 || Tower4->health <= 0) {
+			Tower4 = NULL;
+			_hud->SetStateInt("Tower4_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower4_maxhealth", rvTower::maxHealth);
+			_hud->SetStateInt("tower4_health", Tower4->health);
+			_hud->HandleNamedEvent("updateTowerBar");
+		}
+	}
+	//-----
+	Tower5 = gameLocal.FindEntity("tower_5");
+	if (_hud->State().GetInt("tower5_health", "-1") != (Tower5 ? Tower5->health : -1)) {
+		if (!Tower5 || Tower5->health <= 0) {
+			Tower5 = NULL;
+			_hud->SetStateInt("Tower5_health", -1);
+		}
+		else {
+			_hud->SetStateInt("tower5_maxhealth", rvTower::maxHealth);
+			_hud->SetStateInt("tower5_health", Tower5->health);
+			_hud->HandleNamedEvent("updateTowerBar");
+			
 		}
 	}
 		
@@ -3435,7 +3524,31 @@ void idPlayer::UpdateHudStats( idUserInterface *_hud ) {
 	if ( weapon ) {
 		UpdateHudAmmo( _hud );
 	}
+
+	//-----------------criipi
+
+	_hud->SetStateInt("points", points);
+
+
+	switch (lvl)
+	{
+	case 1:
+		_hud->SetStateString("pllvl", "Level 1");
+		break;
+	case 2:
+		_hud->SetStateString("pllvl", "Level 2");
+		break;
+	case 3:
+		_hud->SetStateString("pllvl", "Level 3");
+		break;
+	case 4:
+		_hud->SetStateString("pllvl", "Level 4");
+		break;
+	default:
+		break;
+	}
 	
+
 	_hud->StateChanged( gameLocal.time );
 }
 
@@ -3547,6 +3660,8 @@ void idPlayer::UpdateHudWeapon( int displayWeapon ) {
 	hud->HandleNamedEvent( "weaponChange" );
 	hud->StateChanged( gameLocal.time ); 			
 	weaponChangeIconsUp = true;
+
+	
 
 	// if previousWeapon is -1, the weaponChange state won't update it, so manually reset it
 #ifdef _XENON
@@ -3779,6 +3894,8 @@ void idPlayer::DrawHUD( idUserInterface *_hud ) {
 			overlayHudTime = 0;
 		}
 	}
+
+
 }
 
 /*
@@ -5066,7 +5183,6 @@ idPlayer::GiveWeaponMods
 bool idPlayer::GiveWeaponMods( int mods ) {
 	inventory.weaponMods[currentWeapon] |= mods;
 	currentWeapon = -1;
-	
 	return true;
 }
 

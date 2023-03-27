@@ -3,6 +3,7 @@
 #pragma hdrstop
 
 #include "../Game_local.h"
+#include "AI_Manager.h"
 
 
 //NOTE: actually a bit of a misnomer, as all Strogg Marine types use this class now...
@@ -17,10 +18,16 @@ public:
 	void				Spawn							( void );
 	void				Save							( idSaveGame *savefile ) const;
 	void				Restore							( idRestoreGame *savefile );
+	virtual bool			Attack(const char* attackName, jointHandle_t joint, idEntity* target, const idVec3& pushVelocity = vec3_origin);
+	virtual	void		Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir, const char* damageDefName, const float damageScale, const int location);
+
+
 
 protected:
 
 	virtual void		OnStopMoving					( aiMoveCommand_t oldMoveCommand );
+	virtual void			Think(void);
+
 
 	virtual bool		CheckActions					( void );
 
@@ -32,6 +39,8 @@ protected:
 	int					fireAnimNum;
 	bool				spraySideRight;
 	int					sweepCount;
+
+	int					thinkcount;
 
 	bool				EnemyMovingToRight				( void );
 
@@ -95,6 +104,7 @@ rvMonsterStroggMarine::Spawn
 ================
 */
 void rvMonsterStroggMarine::Spawn ( void ) {
+	
 	actionStrafe.Init  ( spawnArgs, "action_strafe",	NULL,	0 );
 	actionCrouchRangedAttack.Init  ( spawnArgs, "action_crouchRangedAttack",	NULL, AIACTIONF_ATTACK );
 	actionRollAttack.Init  ( spawnArgs, "action_rollAttack",	NULL, AIACTIONF_ATTACK );
@@ -103,9 +113,13 @@ void rvMonsterStroggMarine::Spawn ( void ) {
 	actionReload.Init  ( spawnArgs, "action_reload",	NULL, 0 );
 
 	InitSpawnArgsVariables();
+	
+	
 
 	shots	 = 0;
 	shotsFired = 0;
+	thinkcount = 0;
+	ClearEnemy();
 }
 
 /*
@@ -169,10 +183,7 @@ void rvMonsterStroggMarine::OnStopMoving ( aiMoveCommand_t oldMoveCommand ) {
 		if ( combat.tacticalCurrent == AITACTICAL_HIDE )
 		{
 		}
-		else if ( combat.tacticalCurrent == AITACTICAL_MELEE )
-		{
-			actionMeleeAttack.timer.Clear( actionTime );
-		}
+		
 		else
 		{
 			actionRangedAttack.timer.Clear( actionTime );
@@ -182,6 +193,121 @@ void rvMonsterStroggMarine::OnStopMoving ( aiMoveCommand_t oldMoveCommand ) {
 			actionSprayAttack.timer.Clear( actionTime );
 		}
 	}
+}
+
+
+
+
+void rvMonsterStroggMarine::Think(void) {
+
+	// if we are completely closed off from the player, don't do anything at all
+	if (CheckDormant()) {
+		return;
+	}
+
+	// Simple think this frame?
+
+	aiManager.thinkCount++;
+
+
+	// AI Speeds
+	if (ai_speeds.GetBool()) {
+		aiManager.timerThink.Start();
+	}
+
+	if (thinkFlags & TH_THINK) {
+		// clear out the enemy when he dies or is hidden
+		idEntity* enemyEnt = enemy.ent;
+		idActor* enemyAct = dynamic_cast<idActor*>(enemyEnt);
+
+		// Clear our enemy if necessary
+		if (enemyEnt) {
+			
+			bool enemyDead = (enemyEnt->fl.takedamage && enemyEnt->health <= 0);
+			if (enemyDead || enemyEnt->fl.notarget || enemyEnt->IsHidden() || (enemyAct && enemyAct->team == team)) {
+				ClearEnemy(enemyDead);
+			}	
+		}
+
+		// Action time is stopped when the torso is not idle
+		if (!aifl.action) {
+			actionTime += gameLocal.msec;
+		}
+
+		ValidateCover();
+
+		move.current_yaw += deltaViewAngles.yaw;
+		move.ideal_yaw = idMath::AngleNormalize180(move.ideal_yaw + deltaViewAngles.yaw);
+		deltaViewAngles.Zero();
+
+		if (move.moveType != MOVETYPE_PLAYBACK) {
+			viewAxis = idAngles(0, move.current_yaw, 0).ToMat3();
+		}
+
+		if (!move.fl.allowHiddenMove && IsHidden()) {
+			// hidden monsters
+			UpdateStatesstrogg();
+		}
+		else if (!ai_freeze.GetBool()) {
+			Prethink();
+
+			// clear the ik before we do anything else so the skeleton doesn't get updated twice
+			walkIK.ClearJointMods();
+
+			// update enemy position if not dead
+			if (!aifl.dead) {
+				UpdateEnemy();
+			}
+
+			// update state machine
+			UpdateStatesstrogg();
+			
+			// run all movement commands
+			Move();
+								
+			// if not dead, chatter and blink
+			if (move.moveType != MOVETYPE_DEAD) {
+				UpdateChatter();
+				CheckBlink();
+			}
+
+			Postthink();
+		}
+		else {
+			DrawTactical();
+		}
+
+		// clear pain flag so that we recieve any damage between now and the next time we run the script
+		aifl.pain = false;
+		aifl.damage = false;
+		aifl.pushed = false;
+		pusher = NULL;
+	}
+	else if (thinkFlags & TH_PHYSICS) {
+		RunPhysics();
+	}
+
+	if (move.fl.allowPushMovables) {
+		PushWithAF();
+	}
+
+	if (fl.hidden && move.fl.allowHiddenMove) {
+		// UpdateAnimation won't call frame commands when hidden, so call them here when we allow hidden movement
+		animator.ServiceAnims(gameLocal.previousTime, gameLocal.time);
+	}
+
+	aasSensor->Update();
+
+	UpdateAnimation();
+	Present();
+	LinkCombat();
+
+	// AI Speeds
+	if (ai_speeds.GetBool()) {
+		aiManager.timerThink.Stop();
+	}
+	
+
 }
 
 /*
@@ -750,4 +876,71 @@ stateResult_t rvMonsterStroggMarine::State_Torso_SprayAttack ( const stateParms_
 			return SRESULT_WAIT;	
 	}
 	return SRESULT_ERROR; 
+}
+
+bool rvMonsterStroggMarine::Attack(const char* attackName, jointHandle_t joint, idEntity* target, const idVec3& pushVelocity) {
+	// Get the attack dictionary
+	const idDict* attackDict;
+	attackDict = gameLocal.FindEntityDefDict(spawnArgs.GetString(va("def_attack_%s", attackName)), false);
+	if (!attackDict) {
+		gameLocal.Error("could not find attack entityDef 'def_attack_%s (%s)' on AI entity %s", attackName, spawnArgs.GetString(va("def_attack_%s", attackName)), GetName());
+	}
+
+	// Melee Attack?
+
+
+	// Ranged attack (hitscan or projectile)?
+	return (AttackRanged(attackName, attackDict, joint, target, pushVelocity) != NULL);
+}
+
+
+
+void rvMonsterStroggMarine::Damage(idEntity* inflictor, idEntity* attacker, const idVec3& dir, const char* damageDefName, const float damageScale, const int location)
+{
+	if (forwardDamageEnt.IsValid()) {
+		forwardDamageEnt->Damage(inflictor, attacker, dir, damageDefName, damageScale, location);
+		return;
+	}
+
+	if (!fl.takedamage) {
+		return;
+	}
+
+	if (!inflictor) {
+		inflictor = gameLocal.world;
+	}
+
+	if (!attacker) {
+		attacker = gameLocal.world;
+	}
+
+	const idDict* damageDef = gameLocal.FindEntityDefDict(damageDefName, false);
+	if (!damageDef) {
+		gameLocal.Error("Unknown damageDef '%s'\n", damageDefName);
+	}
+
+
+	int	damage = damageDef->GetInt("damage");
+
+	// inform the attacker that they hit someone
+	attacker->DamageFeedback(this, inflictor, damage);
+	if (damage) {
+		// do the damage
+		//jshepard: this is kinda important, no?
+		health -= damage;
+
+		if (health <= 0) {
+			if (health < -999) {
+				health = -999;
+			}
+
+			Killed(inflictor, attacker, damage, dir, location);
+		}
+		else {
+			Pain(inflictor, attacker, damage, dir, location);
+		}
+	}
+
+	SetEnemy(attacker);
+
 }

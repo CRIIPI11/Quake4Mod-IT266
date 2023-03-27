@@ -40,6 +40,8 @@ rvAITactical::rvAITactical
 rvAITactical::rvAITactical ( void ) {
 	shots = 0;
 	nextWallTraceTime = 0;
+	aifl.awake = 1;
+	fl.isDormant = 0;
 }
 
 void rvAITactical::InitSpawnArgsVariables ( void ) 
@@ -94,8 +96,10 @@ void rvAITactical::Spawn ( void ) {
 //	playerFocusTime = 0;
 //	playerAnnoyTime = SEC2MS(spawnArgs.GetFloat ( "annoyed", "5" ));
 
+	
 	healthRegenNextTime = 0;
 	maxHealth = health;
+	move.moveType = MOVETYPE_ANIM;
 }
 
 /*
@@ -112,40 +116,6 @@ void rvAITactical::Think ( void ) {
 			PerformAction ( "Torso_SetPosture", 4, true );
 		}
 	}
-
-// FIXME: disabled for now, its annoying people
-	/*
-	idPlayer* localPlayer;
-	localPlayer = gameLocal.GetLocalPlayer();
-	
-	// If the player has been standing in front of the marine and looking at him for too long he should say something
-	if ( !aifl.dead && playerFocusTime && playerAnnoyTime 
-		&& !aifl.scripted && focusType == AIFOCUS_PLAYER && localPlayer && !IsSpeaking() 
-		&& !localPlayer->IsBeingTalkedTo() //nobody else is talking to him right now
-		&& DistanceTo( localPlayer ) < 64.0f ) {
-		idVec3		diff;
-
-
-		diff = GetPhysics()->GetOrigin() - localPlayer->GetPhysics()->GetOrigin();
-		diff.NormalizeFast();
-
-		// Is the player looking at the marine?
-		if ( diff * localPlayer->viewAxis[0] > 0.7f ) {			
-			// Say something every 5 seconds
-			if ( gameLocal.time - playerFocusTime > playerAnnoyTime ) {
-				// Debounce it against other marines
-				if ( aiManager.CheckTeamTimer ( team, AITEAMTIMER_ANNOUNCE_CANIHELPYOU ) ) {
-					Speak ( "lipsync_canihelpyou", true );
-					aiManager.SetTeamTimer ( team, AITEAMTIMER_ANNOUNCE_CANIHELPYOU, 5000 );				
-				}
-			}
-		} else {
-			playerFocusTime = gameLocal.time;
-		}
-	} else {
-		playerFocusTime = gameLocal.time;
-	}
-	*/
 
 	if ( health > 0 ) {
 		//alive
@@ -187,7 +157,6 @@ void rvAITactical::Think ( void ) {
 			}
 		}
 	}
-
 	if ( facingWall ) {
 		if ( !animPrefix.Length() ) {
 			animPrefix = "nearcover";
@@ -305,7 +274,7 @@ bool rvAITactical::CheckActions ( void ) {
 	}
 	
 	// If we are pressed, fight-- do not break melee combat until you or the enemy is dead.
-	if ( IsMeleeNeeded ( ))	{
+	if (IsMeleeNeeded()) {
 		if ( PerformAction ( &actionMeleeAttack, (checkAction_t)&idAI::CheckAction_MeleeAttack )							 || 
 			 PerformAction ( &actionElbowAttack, (checkAction_t)&idAI::CheckAction_LeapAttack )									) {
 			return true;
@@ -357,10 +326,10 @@ bool rvAITactical::CheckActions ( void ) {
 	}
 
 	// Standard attacks
-	if ( PerformAction ( &actionMeleeAttack, (checkAction_t)&idAI::CheckAction_MeleeAttack )							 || 
+	/*if (PerformAction(&actionMeleeAttack, (checkAction_t)&idAI::CheckAction_MeleeAttack) ||
 		 PerformAction ( &actionElbowAttack, (checkAction_t)&idAI::CheckAction_LeapAttack )									) {
 		return true;
-	}
+	}*/
 
 	// Ranged attack only if there is ammo
 	if ( postureInfo[postureCurrent].fl.canShoot && (ammo > 0 || ammo == -1) ) {

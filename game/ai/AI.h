@@ -460,7 +460,11 @@ public:
 
 							// Outputs a list of all monsters to the console.
 	static void				List_f( const idCmdArgs &args );
+	//------------------criipi
 
+	static void ListEnemies_f(const idCmdArgs& args);
+
+	//------------------criipi
 
 	// Add some dynamic externals for debugging
 	virtual void			GetDebugInfo					( debugInfoProc_t proc, void* userData );
@@ -478,6 +482,7 @@ public:
  	bool					IsCoverValid					( void ) const;
 	virtual bool			IsCrouching						( void ) const;
 
+	
 
 public:
 
@@ -777,6 +782,7 @@ public:
 
 	// AI script state management
 	void					UpdateStates					( void );
+	void					UpdateStatesstrogg				( void );
 	void					UpdateFocus						( const idMat3& orientationAxis );
 	void					SetFocus						( aiFocus_t focus, int time );
 
@@ -874,6 +880,7 @@ public:
 
 	virtual bool				UpdateRunStatus					( void );
 	bool						UpdateTactical					( int delay = 0 );
+	bool						UpdateTacticalstrogg			( int delay = 0 );
 	void						ForceTacticalUpdate				( void );
 	bool						UpdateTactical_r				( void );
 	virtual int					FilterTactical					( int availableTactical );

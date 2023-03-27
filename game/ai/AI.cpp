@@ -652,9 +652,9 @@ void idAI::Spawn( void ) {
  	combat.visStandHeight			= spawnArgs.GetFloat( "visStandHeight", "68" );
  	combat.visCrouchHeight			= spawnArgs.GetFloat( "visCrouchHeight", "48" );
  	combat.earRange					= spawnArgs.GetFloat( "earRange", "2048" );
- 	combat.awareRange				= spawnArgs.GetFloat( "awareRange", "150" );
+ 	combat.awareRange				= spawnArgs.GetFloat( "awareRange", "650" );
  	combat.aggressiveRange			= spawnArgs.GetFloat( "aggressiveRange", "0" );
- 	combat.maxLostVisTime			= SEC2MS ( spawnArgs.GetFloat ( "maxLostVisTime", "10" ) );
+ 	combat.maxLostVisTime			= SEC2MS ( spawnArgs.GetFloat ( "maxLostVisTime", "5" ) );
  	combat.tacticalPainThreshold    = spawnArgs.GetInt ( "tactical_painThreshold", va("%d", health / 4) );
 	combat.coverValidTime			= 0;
 	combat.maxInvalidCoverTime		= SEC2MS ( spawnArgs.GetFloat ( "maxInvalidCoverTime", "1" ) );
@@ -817,7 +817,7 @@ void idAI::Spawn( void ) {
 	actionEvadeLeft.Init		( spawnArgs, "action_evadeLeft",		NULL,					0 );
 	actionEvadeRight.Init		( spawnArgs, "action_evadeRight",		NULL, 					0 );
 	actionRangedAttack.Init		( spawnArgs, "action_rangedAttack",		NULL, 					AIACTIONF_ATTACK );
-	actionMeleeAttack.Init		( spawnArgs, "action_meleeAttack",		NULL, 					AIACTIONF_ATTACK|AIACTIONF_MELEE );
+	actionMeleeAttack.Init		( spawnArgs, "action_meleeAttack",		NULL, 					AIACTIONF_ATTACK | AIACTIONF_MELEE);
 	actionLeapAttack.Init		( spawnArgs, "action_leapAttack",		NULL, 					AIACTIONF_ATTACK );
 	actionJumpBack.Init			( spawnArgs, "action_jumpBack",			NULL, 					0 );
 			
@@ -1138,14 +1138,16 @@ idAI::Think
 void idAI::Think( void ) {
 
 	// if we are completely closed off from the player, don't do anything at all
-	if ( CheckDormant() ) {
+	if (CheckDormant()) {
 		return;
 	}
 
 	// Simple think this frame?
-	aifl.simpleThink = aiManager.IsSimpleThink ( this );
+	
+	aifl.simpleThink = aiManager.IsSimpleThink(this);
 
 	aiManager.thinkCount++;
+	
 
 	// AI Speeds
 	if ( ai_speeds.GetBool ( ) ) {
@@ -1365,6 +1367,7 @@ void idAI::UpdateFocus ( const idMat3& orientationAxis ) {
 idAI::UpdateStates
 =====================
 */
+
 void idAI::UpdateStates ( void ) {
 	MEM_SCOPED_TAG(tag,MA_DEFAULT);
 
@@ -1379,6 +1382,28 @@ void idAI::UpdateStates ( void ) {
 	aifl.hitEnemy = false;
 
 	if ( move.fl.allowHiddenMove || !IsHidden() ) {
+		// update the animstate if we're not hidden
+		UpdateAnimState();
+	}
+
+	
+}
+
+void idAI::UpdateStatesstrogg(void) {
+	MEM_SCOPED_TAG(tag, MA_DEFAULT);
+
+	// Continue updating tactical state if for some reason we dont have one 
+	if (!aifl.dead && !aifl.scripted && !aifl.action && stateThread.IsIdle() && aifl.scriptedEndWithIdle) {
+		UpdateTacticalstrogg(0);
+	}
+	else {
+		UpdateState();
+	}
+
+	// clear the hit enemy flag so we catch the next time we hit someone
+	aifl.hitEnemy = false;
+
+	if (move.fl.allowHiddenMove || !IsHidden()) {
 		// update the animstate if we're not hidden
 		UpdateAnimState();
 	}
@@ -1544,13 +1569,13 @@ bool idAI::Pain( idEntity *inflictor, idEntity *attacker, int damage, const idVe
 	// jshepard: friendly fire will cause pain. Players will only be able to pain buddy marines
 	// via splash damage.
 
-/*
+
 	if ( attacker && attacker->IsType ( idActor::GetClassType ( ) ) ) {
 		if ( static_cast<idActor*>( attacker )->team == team ) {
 			return aifl.pain;
 		}
 	}
-*/
+
 
 	// ignore damage from self
 	if ( attacker != this ) {
@@ -1613,6 +1638,7 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 	idAngles			ang;
 	const char*			modelDeath;
 	const idKeyValue*	kv;
+	idPlayer* player;
 	
 	if ( g_debugDamage.GetBool() ) {
 		gameLocal.Printf( "Damage: joint: '%s', zone '%s'\n", animator.GetJointName( ( jointHandle_t )location ), 
@@ -1753,6 +1779,16 @@ void idAI::Killed( idEntity *inflictor, idEntity *attacker, int damage, const id
 		}
 		kv = spawnArgs.MatchPrefix( "def_drops", kv );
 	}
+
+	//================Player's Points=============== criipi
+	if (attacker->IsType(idPlayer::GetClassType()))
+	{
+		gameLocal.Printf("YO\n");
+		player = static_cast<idPlayer*>(attacker);
+		player->points += 25;
+
+	}
+	
 }
 
 /***********************************************************************
@@ -1792,7 +1828,7 @@ void idAI::Activate( idEntity *activator ) {
 	}
 
 	if ( ReactionTo( player ) & ATTACK_ON_ACTIVATE ) {
-		SetEnemy( player );
+		
 	}
 	
 	// If being activated by a spawner we need to attach to it
@@ -3614,6 +3650,8 @@ void idAI::Prethink ( void ) {
 	} else if ( tether && aifl.tetherMover ) {
 		SetTether ( NULL );
 	}
+	
+
 }
 
 /*
@@ -5148,4 +5186,51 @@ bool idAI::CheckDeathCausesMissionFailure( void )
 		}
 	}
 	return false;
+}
+
+void idAI::ListEnemies_f(const idCmdArgs& args) {
+	idLinkList<idActor>* list;
+	idEntity* ent;
+	int i;
+
+	ent = gameLocal.FindEntity(args.Argv(1));
+	if (!ent) {
+		gameLocal.Printf("entity not found\n");
+		return;
+	}
+	if (ent->IsType(idActor::GetClassType())) {
+
+		idActor* en = static_cast<idActor*>(ent);
+		if (en)
+		{
+			list = en->enemyList.ListHead();
+			gameLocal.Printf("%d\n", en->enemyList.Num());
+			gameLocal.Printf("%s\n", list->Owner()->GetName());
+
+			for (i = 0; i < en->enemyList.Num(); i++) {
+			
+				gameLocal.Printf("$d\n", en->enemyList.Num());
+				gameLocal.Printf("\"ENEMY: \"  " S_COLOR_WHITE "\"%s\"\n", list->Owner()->GetName());
+
+				if (i< en->enemyList.Num() -1)
+				{
+					list->NextNode();
+				}
+			}
+		}
+		else
+		{
+			gameLocal.Printf("INVALID2");
+
+		}
+		
+		
+	}
+	else
+	{
+		gameLocal.Printf("INVALID");
+	}
+
+
+	
 }
